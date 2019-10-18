@@ -4,10 +4,10 @@
 public class Player : MonoBehaviour
 {
 
-    public float jumpHeight = 2;
-    public float timeToJumpApex = .3f;
-    public float dropGravityMultiplier = 0.9f;
-    float accelerationTimeAirborne = .2f;
+    public float jumpHeight = 3;
+    public float timeToJumpApex = .5f;
+    public float dropGravityMultiplier = 0.5f;
+    float accelerationTimeAirborne = .4f;
     float accelerationTimeGrounded = .1f;
     float moveSpeed = 6;
 
@@ -31,11 +31,24 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(Input.GetKeyDown(KeyCode.Space) + " " + controller.collisions.below);
+        //Debug.Log(Input.GetKeyDown(KeyCode.Space) + " " + controller.collisions.below);
         if (Input.GetKeyDown(KeyCode.Space) && controller.collisions.below)
         {
             Jump();
             controller.collisions.below = false;
+        }
+        if (grapple)
+        {
+            if (grapple.isShooting())
+            {
+                grapple.lineRenderer.SetPosition(0, transform.position - grapple.transform.position);
+                grapple.lineRenderer.SetPosition(1, grapple.startingPosition * (grapple.shootingInterval - (Time.time - grapple.startTime)) / grapple.shootingInterval);
+            }
+            else
+            {
+                grapple.lineRenderer.SetPosition(0, transform.position - grapple.transform.position);
+                grapple.lineRenderer.SetPosition(1, Vector3.zero);
+            }
         }
     }
 
@@ -51,6 +64,7 @@ public class Player : MonoBehaviour
         var projectedPos = transform.position + velocity * Time.deltaTime;
         var distToGrapple = (grapple == null) ? 0 : Vector3.Distance(projectedPos, grapple.transform.position);
         //Debug.Log("grapple dist" + distToGrapple);
+        Debug.Log(controller.collisions.below);
         if (grapple == null || distToGrapple < grapple.grappleLength)
         {
             //Debug.Log("Normal dist=" + distToGrapple);
@@ -59,9 +73,24 @@ public class Player : MonoBehaviour
 
 
             var displacement = velocity;
-            float augmentedGravity = velocity.y > 0 ? gravity
-                : gravity * dropGravityMultiplier;
+            float augmentedGravity = gravity;
+            if (velocity.y <= 0)
+            {
+                augmentedGravity *= dropGravityMultiplier;
+            }
+            if (grapple != null)
+            {
+                if (grapple.isShooting())
+                {
+                    augmentedGravity = 0;
+                }
+                else
+                {
+                    augmentedGravity /= dropGravityMultiplier;
+                }
+            }
             velocity.y += augmentedGravity * Time.deltaTime;
+            velocity.y = Mathf.Max(velocity.y, -8);
 
             controller.Move(displacement * Time.deltaTime);
             if (grapple != null)
@@ -69,7 +98,7 @@ public class Player : MonoBehaviour
                 grapple.wasSwinging = false;
             }
         }
-        else
+        else if (!controller.collisions.below)
         {
             if (grapple.wasSwinging == false)
             {
@@ -113,8 +142,9 @@ public class Player : MonoBehaviour
             Debug.DrawLine(grapple.transform.position, grapple.transform.position + Quaternion.AngleAxis(-Mathf.Sign(grapple.startingPosition.x) * grapple.totalAngle, Vector3.forward) * grapple.startingPosition, Color.green);
             Debug.DrawLine(grapple.transform.position, grapple.transform.position + Quaternion.AngleAxis(angle, Vector3.forward) * grapple.startingPosition);
 
-            var swingPos = grapple.transform.position + Quaternion.AngleAxis(angle, Vector3.forward) * grapple.startingPosition;
-            var displacement = swingPos - transform.position;
+
+            var swingPos = Quaternion.AngleAxis(angle, Vector3.forward) * grapple.startingPosition;
+            var displacement = grapple.transform.position + swingPos - transform.position;
             velocity = displacement / Time.deltaTime;
 
             controller.Move(displacement);
@@ -131,6 +161,10 @@ public class Player : MonoBehaviour
             Destroy(grapple.gameObject);
         }
         grapple = g;
+        if (grapple)
+        {
+            grapple.InitSwing(this);
+        }
     }
 
     public void Jump()
@@ -141,7 +175,7 @@ public class Player : MonoBehaviour
 
     public void JumpDiagonal(Vector3 direction)
     {
-        Debug.Log("Jump");
+        Debug.Log("JumpDiagonal");
         direction = direction.normalized * jumpVelocity;
         velocity = direction;
     }
