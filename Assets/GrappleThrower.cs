@@ -19,19 +19,26 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonUp(0))
+        if (player.grapple != null && Input.GetMouseButtonUp(0))
         {
-            // Debug.Log("Time.time - player.grapple.startTime " + (Time.time - player.grapple.startTime));
-            if (Time.time - player.grapple.startTime < player.grapple.shootingInterval)
+            var grapple = player.grapple;
+            var playerToGrapple = grapple.transform.position - player.transform.position;
+            Debug.Log("GetMouseButtonUp: " +
+                "Time= " + (Time.time - grapple.startTime) + " " +
+                "grapple= " + grapple.startingPosition.x + ",  " + grapple.startingPosition.y + " " +
+                "grapple= " + playerToGrapple.x + ",  " + playerToGrapple.y + " " +
+                "");
+            if (Time.time - grapple.startTime < grapple.shootingInterval)
             {
-                // Debug.Log("player.grapple.startingPosition.y "+ player.grapple.startingPosition.y);
+                // Debug.Log("grapple.startingPosition.y "+ grapple.startingPosition.y);
                 // Debug.Log("player.controller.collisions.below " + player.controller.collisions.below);
-                if (player.grapple.startingPosition.y > 0 && player.controller.collisions.below == true)
+                if (grapple.startingPosition.y > 0 && player.controller.collisions.below == true)
                 {
-                    //var dir = (-player.grapple.startingPosition + Vector3.up * 1f).normalized;
+                    //var dir = (-grapple.startingPosition + Vector3.up * 1f).normalized;
                     //dir.y = -dir.y;
                     var dir = Vector3.up;
-                    dir += Vector3.right * Mathf.Sign(-player.grapple.startingPosition.x);
+                    dir += Vector3.right * Mathf.Sign(-grapple.startingPosition.x);
+                    Debug.Log("JumpDiagonal");
                     player.JumpDiagonal(dir);
                     player.controller.collisions.below = false;
                 }
@@ -39,14 +46,14 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                 {
                     player.controller.collisions.above = false;
                     player.controller.collisions.below = false;
-                    player.velocity = -player.grapple.startingPosition * shootSpeed;
+                    player.velocity = -grapple.startingPosition * shootSpeed;
                 }
             }
             else
             {
-                if (player.velocity.magnitude < 3f || player.controller.collisions.below)
+                if (!player.controller.collisions.below && player.velocity.magnitude < 6f || (player.controller.collisions.below && playerToGrapple.y < 0))
                 {
-                    var dirX = Mathf.Sign(-player.grapple.startingPosition.x) * Mathf.Sin(player.grapple.time / player.grapple.totalTIme * Mathf.PI);
+                    var dirX = Mathf.Sign(-playerToGrapple.x) * Mathf.Sin(grapple.time / grapple.totalTIme * Mathf.PI);
                     if (dirX == 0)
                     {
                         dirX = 1;
@@ -54,6 +61,7 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
                     var dir = Vector3.up;
                     dir += Vector3.right * dirX / 4;
+                    Debug.Log("JumpDiagonal");
                     player.JumpDiagonal(dir.normalized);
                     player.controller.collisions.below = false;
                 }
