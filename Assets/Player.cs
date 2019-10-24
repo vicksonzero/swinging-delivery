@@ -3,6 +3,8 @@
 [RequireComponent(typeof(Controller2D))]
 public class Player : MonoBehaviour
 {
+    public enum MovementMode { STOP, RUN, SWING, DASH, HOP, WALL_RUN }
+    public MovementMode mode = MovementMode.STOP;
 
     public float jumpHeight = 3;
     public float timeToJumpApex = .5f;
@@ -62,7 +64,23 @@ public class Player : MonoBehaviour
             controller.collisions.right + " " +
             controller.collisions.climbingSlope
             );
-        if (controller.collisions.above || controller.collisions.below)
+        switch (mode)
+        {
+            case MovementMode.STOP:
+                break;
+            case MovementMode.RUN:
+
+                break;
+            case MovementMode.SWING:
+                break;
+            case MovementMode.DASH:
+                break;
+            case MovementMode.HOP:
+                break;
+            case MovementMode.WALL_RUN:
+                break;
+        }
+        if (controller.collisions.below)
         {
             velocity.y = 0;
         }
@@ -100,6 +118,10 @@ public class Player : MonoBehaviour
             velocity.y = Mathf.Max(velocity.y, -8);
 
             var displacement = velocity;
+            if (controller.collisions.above && displacement.y > 0)
+            {
+                displacement.y = 0;
+            }
             controller.Move(displacement * Time.deltaTime);
             if (grapple != null)
             {
