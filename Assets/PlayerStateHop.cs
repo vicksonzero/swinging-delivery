@@ -50,6 +50,7 @@ public class PlayerStateHop : IPlayerState
     public override void HandleMovement()
     {
         float augmentedGravity = GetGravity();
+        var grapple = player.grapple;
 
         player.velocity.y += augmentedGravity * Time.deltaTime;
         player.velocity.y = Mathf.Max(player.velocity.y, -8);
@@ -59,10 +60,14 @@ public class PlayerStateHop : IPlayerState
         {
             displacement.y = 0;
         }
-        player.controller.Move(displacement * Time.deltaTime);
-        if (player.grapple != null)
+        if (grapple != null && grapple.isShooting())
         {
-            player.grapple.wasSwinging = false;
+            displacement *= 2f / displacement.magnitude;
+        }
+        player.controller.Move(displacement * Time.deltaTime);
+        if (grapple != null)
+        {
+            grapple.wasSwinging = false;
         }
     }
 

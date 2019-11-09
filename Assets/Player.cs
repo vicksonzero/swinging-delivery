@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     public float dropGravityMultiplier = 0.5f;
     public int runningDir = 0;
     internal float accelerationTimeAirborne = .4f;
-    internal float accelerationTimeGrounded = .9f;
+    internal float accelerationTimeGrounded = .7f;
     internal float moveSpeed = 4;
 
     internal float gravity;
@@ -148,6 +148,10 @@ public class Player : MonoBehaviour
         if (controller.collisions.above && displacement.y > 0)
         {
             displacement.y = 0;
+        }
+        if (grapple != null && grapple.isShooting())
+        {
+            displacement *= 0.01f / displacement.magnitude;
         }
         controller.Move(displacement * Time.deltaTime);
         if (grapple != null)

@@ -5,6 +5,8 @@ public class PlayerStateRun : IPlayerState
     public override string GetName() => "Run";
 
     public bool prepHop = false;
+    public float startPrepHop = 0;
+    public float stopRequirement = 1f;
 
     public PlayerStateRun(Player p) : base(p)
     {
@@ -52,6 +54,7 @@ public class PlayerStateRun : IPlayerState
         {
             if (fixedMouse.y < player.transform.position.y)
             {
+                startPrepHop = Time.fixedTime;
                 prepHop = true;
                 player.runningDir = (int)Mathf.Sign(fixedMouse.x - player.transform.position.x);
                 Debug.Log("prepHop");
@@ -62,12 +65,43 @@ public class PlayerStateRun : IPlayerState
                 player.CreateGrapple();
             }
         }
+
+        if (prepHop && Time.fixedTime - startPrepHop >= stopRequirement)
+        {
+            player.velocity = Vector3.zero;
+            return new PlayerStateStop(player);
+        }
         return null;
     }
 
     public override void HandleMovement()
     {
-        player.DoRun();
+        var grapple = player.grapple;
+        //Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 input = new Vector2(player.runningDir, 0);
+        float targetVelocityX = input.normalized.x * player.moveSpeed;
+        player.velocity.x = Mathf.SmoothDamp(player.velocity.x, targetVelocityX, ref player.velocityXSmoothing, player.accelerationTimeGrounded);
+
+
+        float augmentedGravity = GetGravity();
+
+        player.velocity.y += augmentedGravity * Time.deltaTime;
+        player.velocity.y = Mathf.Max(player.velocity.y, -8);
+
+        var displacement = player.velocity;
+        if (player.controller.collisions.above && displacement.y > 0)
+        {
+            displacement.y = 0;
+        }
+        if (grapple != null && grapple.isShooting() || prepHop)
+        {
+            displacement *= 1f / displacement.magnitude;
+        }
+        player.controller.Move(displacement * Time.deltaTime);
+        if (grapple != null)
+        {
+            grapple.wasSwinging = false;
+        }
     }
 
     public override void OnDetach()

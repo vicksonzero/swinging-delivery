@@ -5,7 +5,7 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 {
     public Grapple grapplePrefab;
     public float shootSpeed = 3.6f;
-    public float shootingInterval = 0.3f;
+    public float shootingInterval = 0.25f;
 
     Player player;
 

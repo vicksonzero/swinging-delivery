@@ -5,6 +5,8 @@ public class PlayerStateWallRun : IPlayerState
     public override string GetName() => "WallRun";
 
     public bool prepHop = false;
+    public float startPrepHop = 0;
+    public float stopRequirement = 1f;
 
     public PlayerStateWallRun(Player p) : base(p)
     {
@@ -56,6 +58,7 @@ public class PlayerStateWallRun : IPlayerState
             var clickingIntoWall = player.runningDir * (fixedMouse.x - player.transform.position.x) > 0;
             if (clickingIntoWall)
             {
+                startPrepHop = Time.fixedTime;
                 prepHop = true;
                 player.runningDir = (int)Mathf.Sign(fixedMouse.x - player.transform.position.x);
                 Debug.Log("prepHop");
@@ -66,11 +69,18 @@ public class PlayerStateWallRun : IPlayerState
                 player.CreateGrapple();
             }
         }
+
+        if (prepHop && Time.fixedTime - startPrepHop >= stopRequirement)
+        {
+            player.velocity = Vector3.zero;
+            return new PlayerStateWallStop(player);
+        }
         return null;
     }
 
     public override void HandleMovement()
     {
+        var grapple = player.grapple;
         Vector2 input = new Vector2(1, 1);
         float targetVelocityY = input.normalized.y * player.moveSpeed;
         input.x = input.x * player.runningDir;
@@ -78,6 +88,10 @@ public class PlayerStateWallRun : IPlayerState
         player.velocity.x = input.x;
 
         var displacement = player.velocity;
+        if (grapple != null && grapple.isShooting() || prepHop)
+        {
+            displacement *= 1f / displacement.magnitude;
+        }
         player.controller.Move(displacement * Time.deltaTime);
     }
 

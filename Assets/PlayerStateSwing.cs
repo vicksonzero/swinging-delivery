@@ -39,11 +39,11 @@ public class PlayerStateSwing : IPlayerState
 
         if (fixedMouse.wasUp)
         {
-            if (grapple.time / grapple.totalTIme > 1 && player.velocity.magnitude < additionalHeightThreshold)
+            if (grapple.time / grapple.totalTIme > 0.5f && player.velocity.magnitude < additionalHeightThreshold)
             {
                 var playerToGrapple = grapple.transform.position - player.transform.position;
 
-                var dirX = Mathf.Sign(-playerToGrapple.x) * Mathf.Sin(grapple.time / grapple.totalTIme * Mathf.PI);
+                var dirX = Mathf.Sign(playerToGrapple.x) * Mathf.Sin(grapple.time / grapple.totalTIme * Mathf.PI);
                 if (dirX == 0)
                 {
                     dirX = 1;

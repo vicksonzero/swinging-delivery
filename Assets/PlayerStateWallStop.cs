@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 
-public class PlayerStateStop : IPlayerState
+public class PlayerStateWallStop : IPlayerState
 {
-    public override string GetName() => "Stop";
+    public override string GetName() => "WallStop";
 
-    public bool prepRun = false;
+    public bool prepHop = false;
 
-    public PlayerStateStop(Player p) : base(p)
+    public PlayerStateWallStop(Player p) : base(p)
     {
     }
 
@@ -20,9 +20,13 @@ public class PlayerStateStop : IPlayerState
         var grapple = player.grapple;
         //Debug.Log("PlayerStateStop.HandleInput " + fixedMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
 
-        if (fixedMouse.wasUp && prepRun)
+        if (fixedMouse.wasUp && prepHop)
         {
-            return new PlayerStateRun(player);
+            var dir = new Vector3(1, 1);
+            dir.x = -player.runningDir * Mathf.Abs(dir.x);
+            player.runningDir = (int)Mathf.Sign(dir.x);
+            player.Hop(dir);
+            return new PlayerStateHop(player);
         }
         if (fixedMouse.wasUp && player.grapple && player.grapple.isShooting())
         {
@@ -40,11 +44,12 @@ public class PlayerStateStop : IPlayerState
         }
         if (fixedMouse.wasDown)
         {
-            if (fixedMouse.y < player.transform.position.y)
+            var clickingIntoWall = player.runningDir * (fixedMouse.x - player.transform.position.x) > 0;
+            if (clickingIntoWall)
             {
-                prepRun = true;
+                prepHop = true;
                 player.runningDir = (int)Mathf.Sign(fixedMouse.x - player.transform.position.x);
-                Debug.Log("prepRun");
+                Debug.Log("prepHop");
                 // TODO: set player sprite to PREP_HOP here
             }
             else
