@@ -37,7 +37,7 @@ public class PlayerStateWallRun : IPlayerState
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
-        if (fixedMouse.wasUp && grapple && grapple.isShooting())
+        if (grapple != null && !grapple.IsShooting())
         {
             var dir = new Vector3(1, 1);
             dir.x = -player.runningDir * Mathf.Abs(dir.x);
@@ -45,13 +45,22 @@ public class PlayerStateWallRun : IPlayerState
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
-        if (grapple != null && !grapple.isShooting())
+        if (fixedMouse.wasUp && player.grapple)
         {
-            var dir = new Vector3(1, 1);
-            dir.x = -player.runningDir * Mathf.Abs(dir.x);
-            player.runningDir = (int)Mathf.Sign(dir.x);
-            player.Hop(dir);
-            return new PlayerStateHop(player);
+            if (player.grapple.IsShooting())
+            {
+                player.velocity = -grapple.startingPosition * player.dashSpeed;
+                player.runningDir = (int)Mathf.Sign(player.velocity.x);
+                player.SetGrapple(null);
+                return new PlayerStateHop(player);
+            }
+            else
+            {
+                var dir = new Vector3(0.5f, 1);
+                dir.x = player.runningDir * Mathf.Abs(dir.x);
+                player.Hop(dir);
+                return new PlayerStateHop(player);
+            }
         }
         if (fixedMouse.wasDown)
         {
@@ -88,7 +97,7 @@ public class PlayerStateWallRun : IPlayerState
         player.velocity.x = input.x;
 
         var displacement = player.velocity;
-        if (grapple != null && grapple.isShooting() || prepHop)
+        if (grapple != null && grapple.IsShooting() || prepHop)
         {
             displacement *= 1f / displacement.magnitude;
         }

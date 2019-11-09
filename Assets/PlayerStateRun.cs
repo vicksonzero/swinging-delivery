@@ -43,12 +43,29 @@ public class PlayerStateRun : IPlayerState
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
-        if (grapple != null && !grapple.isShooting())
+        if (grapple != null && !grapple.IsShooting())
         {
             var dir = new Vector3(0.5f, 1);
             dir.x = player.runningDir * Mathf.Abs(dir.x);
             player.Hop(dir);
             return new PlayerStateHop(player);
+        }
+        if (fixedMouse.wasUp && player.grapple)
+        {
+            if (player.grapple.IsShooting())
+            {
+                player.velocity = -grapple.startingPosition * player.dashSpeed;
+                player.runningDir = (int)Mathf.Sign(player.velocity.x);
+                player.SetGrapple(null);
+                return new PlayerStateHop(player);
+            }
+            else
+            {
+                var dir = new Vector3(0.5f, 1);
+                dir.x = player.runningDir * Mathf.Abs(dir.x);
+                player.Hop(dir);
+                return new PlayerStateHop(player);
+            }
         }
         if (fixedMouse.wasDown)
         {
@@ -71,6 +88,7 @@ public class PlayerStateRun : IPlayerState
             player.velocity = Vector3.zero;
             return new PlayerStateStop(player);
         }
+
         return null;
     }
 
@@ -93,7 +111,7 @@ public class PlayerStateRun : IPlayerState
         {
             displacement.y = 0;
         }
-        if (grapple != null && grapple.isShooting() || prepHop)
+        if (grapple != null && grapple.IsShooting() || prepHop)
         {
             displacement *= 1f / displacement.magnitude;
         }

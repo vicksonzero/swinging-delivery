@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     internal float accelerationTimeAirborne = .4f;
     internal float accelerationTimeGrounded = .7f;
     internal float moveSpeed = 4;
+    internal float dashSpeed = 2f;
 
     internal float gravity;
     float jumpVelocity;
@@ -79,10 +80,10 @@ public class Player : MonoBehaviour
         // grapple graphics
         if (grapple)
         {
-            if (grapple.isShooting())
+            if (grapple.IsShooting())
             {
                 grapple.lineRenderer.SetPosition(0, transform.position - grapple.transform.position);
-                grapple.lineRenderer.SetPosition(1, grapple.startingPosition * (grapple.shootingInterval - (Time.time - grapple.startTime)) / grapple.shootingInterval);
+                grapple.lineRenderer.SetPosition(1, grapple.startingPosition * (grapple.shootingInterval - (Time.fixedTime - grapple.startTime)) / grapple.shootingInterval);
             }
             else
             {
@@ -149,7 +150,7 @@ public class Player : MonoBehaviour
         {
             displacement.y = 0;
         }
-        if (grapple != null && grapple.isShooting())
+        if (grapple != null && grapple.IsShooting())
         {
             displacement *= 0.01f / displacement.magnitude;
         }

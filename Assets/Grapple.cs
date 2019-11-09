@@ -32,9 +32,9 @@ public class Grapple : MonoBehaviour
     {
     }
 
-    public bool isShooting()
+    public bool IsShooting()
     {
-        return Time.time - startTime < shootingInterval;
+        return Time.fixedTime - startTime < shootingInterval;
     }
 
     public void InitSwing(Player player, Vector3 currentVelocity)

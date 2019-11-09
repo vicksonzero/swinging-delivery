@@ -23,11 +23,11 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             var grapple = player.grapple;
             var playerToGrapple = grapple.transform.position - player.transform.position;
             Debug.Log("GetMouseButtonUp: " +
-                "Time= " + (Time.time - grapple.startTime) + " " +
+                "Time= " + (Time.fixedTime - grapple.startTime) + " " +
                 "grapple= " + grapple.startingPosition.x + ",  " + grapple.startingPosition.y + " " +
                 "grapple= " + playerToGrapple.x + ",  " + playerToGrapple.y + " " +
                 "");
-            if (Time.time - grapple.startTime < grapple.shootingInterval)
+            if (grapple.IsShooting())
             {
                 // Debug.Log("grapple.startingPosition.y "+ grapple.startingPosition.y);
                 // Debug.Log("player.controller.collisions.below " + player.controller.collisions.below);
@@ -80,7 +80,7 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         pos = Camera.main.ScreenToWorldPoint(pos);
         pos.z = 0;
         var grappleInst = Instantiate(grapplePrefab, pos, Quaternion.identity);
-        grappleInst.startTime = Time.time;
+        grappleInst.startTime = Time.fixedTime;
         grappleInst.shootingInterval = shootingInterval;
 
         return grappleInst;

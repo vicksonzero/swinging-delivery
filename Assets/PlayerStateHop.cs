@@ -15,6 +15,7 @@ public class PlayerStateHop : IPlayerState
     public override IPlayerState HandleInput()
     {
         var fixedMouse = player.fixedMouse;
+        var grapple = player.grapple;
         var collisions = player.controller.collisions;
         if (collisions.below)
         {
@@ -28,16 +29,33 @@ public class PlayerStateHop : IPlayerState
             player.velocity.y = player.moveSpeed;
             return new PlayerStateWallRun(player);
         }
-        if (player.grapple != null && !player.grapple.isShooting())
+        if (grapple != null && !grapple.IsShooting())
         {
             var projectedPos = player.transform.position + player.velocity * Time.deltaTime;
-            var distToGrapple = (player.grapple == null) ? 0 : Vector3.Distance(projectedPos, player.grapple.transform.position);
+            var distToGrapple = (grapple == null) ? 0 : Vector3.Distance(projectedPos, grapple.transform.position);
 
             var isFalling = player.velocity.y < 0;
-            if (isFalling || distToGrapple >= player.grapple.grappleLength)
+            if (isFalling || distToGrapple >= grapple.grappleLength)
             {
-                player.grapple.InitSwing(player, player.velocity);
+                grapple.InitSwing(player, player.velocity);
                 return new PlayerStateSwing(player);
+            }
+        }
+        if (fixedMouse.wasUp && grapple)
+        {
+            if (grapple.IsShooting())
+            {
+                player.velocity = -grapple.startingPosition * player.dashSpeed;
+                player.runningDir = (int)Mathf.Sign(player.velocity.x);
+                player.SetGrapple(null);
+                return new PlayerStateHop(player);
+            }
+            else
+            {
+                var dir = new Vector3(0.5f, 1);
+                dir.x = player.runningDir * Mathf.Abs(dir.x);
+                player.Hop(dir);
+                return new PlayerStateHop(player);
             }
         }
         if (fixedMouse.wasDown)
@@ -60,7 +78,7 @@ public class PlayerStateHop : IPlayerState
         {
             displacement.y = 0;
         }
-        if (grapple != null && grapple.isShooting())
+        if (grapple != null && grapple.IsShooting())
         {
             displacement *= 2f / displacement.magnitude;
         }

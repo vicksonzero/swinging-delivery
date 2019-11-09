@@ -24,19 +24,22 @@ public class PlayerStateStop : IPlayerState
         {
             return new PlayerStateRun(player);
         }
-        if (fixedMouse.wasUp && player.grapple && player.grapple.isShooting())
+        if (fixedMouse.wasUp && player.grapple)
         {
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
-            player.Hop(dir);
-            return new PlayerStateHop(player);
-        }
-        if (grapple != null && !grapple.isShooting())
-        {
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
-            player.Hop(dir);
-            return new PlayerStateHop(player);
+            if (player.grapple.IsShooting())
+            {
+                player.velocity = -grapple.startingPosition * player.dashSpeed;
+                player.runningDir = (int)Mathf.Sign(player.velocity.x);
+                player.SetGrapple(null);
+                return new PlayerStateHop(player);
+            }
+            else
+            {
+                var dir = new Vector3(0.5f, 1);
+                dir.x = player.runningDir * Mathf.Abs(dir.x);
+                player.Hop(dir);
+                return new PlayerStateHop(player);
+            }
         }
         if (fixedMouse.wasDown)
         {
