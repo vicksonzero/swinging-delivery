@@ -52,10 +52,8 @@ public class PlayerStateHop : IPlayerState
             }
             else
             {
-                var dir = new Vector3(0.5f, 1);
-                dir.x = player.runningDir * Mathf.Abs(dir.x);
-                player.Hop(dir);
-                return new PlayerStateHop(player);
+                // never reached. if reached, release grapple and resume
+                player.SetGrapple(null);
             }
         }
         if (fixedMouse.wasDown)

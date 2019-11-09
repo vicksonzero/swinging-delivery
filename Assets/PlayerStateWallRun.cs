@@ -24,8 +24,7 @@ public class PlayerStateWallRun : IPlayerState
         if (!(collisions.left || collisions.right))
         {
             // player.runningDir = player.runningDir; // keep runningDir
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
+            var dir = new Vector3(player.runningDir, 1);
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
@@ -34,15 +33,15 @@ public class PlayerStateWallRun : IPlayerState
             var dir = new Vector3(1, 1);
             dir.x = -player.runningDir * Mathf.Abs(dir.x);
             player.runningDir = (int)Mathf.Sign(dir.x);
-            player.Hop(dir);
+            player.JumpDiagonal(dir);
             return new PlayerStateHop(player);
         }
-        if (grapple != null && !grapple.IsShooting())
+        if (grapple && !grapple.IsShooting())
         {
             var dir = new Vector3(1, 1);
             dir.x = -player.runningDir * Mathf.Abs(dir.x);
             player.runningDir = (int)Mathf.Sign(dir.x);
-            player.Hop(dir);
+            player.JumpDiagonal(dir);
             return new PlayerStateHop(player);
         }
         if (fixedMouse.wasUp && player.grapple)
@@ -56,6 +55,7 @@ public class PlayerStateWallRun : IPlayerState
             }
             else
             {
+                // never reached
                 var dir = new Vector3(0.5f, 1);
                 dir.x = player.runningDir * Mathf.Abs(dir.x);
                 player.Hop(dir);

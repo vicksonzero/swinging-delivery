@@ -51,7 +51,7 @@ public class PlayerStateSwing : IPlayerState
 
                 var dir = new Vector3(0.5f, 1);
                 dir.x = player.runningDir * Mathf.Abs(dir.x);
-                player.Hop(dir);
+                player.JumpDiagonal(dir);
             }
             else
             {

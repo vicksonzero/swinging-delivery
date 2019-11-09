@@ -25,7 +25,14 @@ public class PlayerStateWallStop : IPlayerState
             var dir = new Vector3(1, 1);
             dir.x = -player.runningDir * Mathf.Abs(dir.x);
             player.runningDir = (int)Mathf.Sign(dir.x);
-            player.Hop(dir);
+            player.JumpDiagonal(dir);
+            return new PlayerStateHop(player);
+        }
+        if (grapple != null && !grapple.IsShooting())
+        {
+            var dir = new Vector3(1, 1);
+            dir.x = player.runningDir * Mathf.Abs(dir.x);
+            player.JumpDiagonal(dir);
             return new PlayerStateHop(player);
         }
         if (fixedMouse.wasUp && player.grapple)
@@ -39,18 +46,12 @@ public class PlayerStateWallStop : IPlayerState
             }
             else
             {
+                // never reached
                 var dir = new Vector3(0.5f, 1);
                 dir.x = player.runningDir * Mathf.Abs(dir.x);
                 player.Hop(dir);
                 return new PlayerStateHop(player);
             }
-        }
-        if (grapple != null && !grapple.IsShooting())
-        {
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
-            player.Hop(dir);
-            return new PlayerStateHop(player);
         }
         if (fixedMouse.wasDown)
         {

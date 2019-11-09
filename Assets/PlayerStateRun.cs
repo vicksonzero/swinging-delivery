@@ -30,29 +30,26 @@ public class PlayerStateRun : IPlayerState
         if (!collisions.below)
         {
             // player.runningDir = player.runningDir; // keep runningDir
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
+            var dir = new Vector3(player.runningDir, 1);
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
 
         if (fixedMouse.wasUp && prepHop)
         {
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
+            var dir = new Vector3(player.runningDir, 1);
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
-        if (grapple != null && !grapple.IsShooting())
+        if (grapple && !grapple.IsShooting())
         {
-            var dir = new Vector3(0.5f, 1);
-            dir.x = player.runningDir * Mathf.Abs(dir.x);
+            var dir = new Vector3(player.runningDir, 1);
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
-        if (fixedMouse.wasUp && player.grapple)
+        if (fixedMouse.wasUp && grapple)
         {
-            if (player.grapple.IsShooting())
+            if (grapple.IsShooting())
             {
                 player.velocity = -grapple.startingPosition * player.dashSpeed;
                 player.runningDir = (int)Mathf.Sign(player.velocity.x);
@@ -61,10 +58,8 @@ public class PlayerStateRun : IPlayerState
             }
             else
             {
-                var dir = new Vector3(0.5f, 1);
-                dir.x = player.runningDir * Mathf.Abs(dir.x);
-                player.Hop(dir);
-                return new PlayerStateHop(player);
+                // never reached. if reached, release grapple and resume
+                player.SetGrapple(null);
             }
         }
         if (fixedMouse.wasDown)

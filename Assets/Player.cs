@@ -14,9 +14,10 @@ public class Player : MonoBehaviour
     public float timeToJumpApex = .5f;
     public float dropGravityMultiplier = 0.5f;
     public int runningDir = 0;
-    internal float accelerationTimeAirborne = .4f;
+    internal float accelerationTimeAirborne = 1.1f;
     internal float accelerationTimeGrounded = .7f;
     internal float moveSpeed = 4;
+    internal float airMoveSpeed = 2;
     internal float dashSpeed = 2f;
 
     internal float gravity;
@@ -219,7 +220,7 @@ public class Player : MonoBehaviour
     public void Hop(Vector3 direction)
     {
         Debug.Log("Hop!");
-        direction = direction.normalized * jumpVelocity;
+        direction = new Vector3(Mathf.Sign(direction.x) * airMoveSpeed, 1 * jumpVelocity);
         velocity = direction;
         runningDir = (int)Mathf.Sign(direction.x);
     }
