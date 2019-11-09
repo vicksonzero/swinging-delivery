@@ -43,6 +43,7 @@ public class Grapple : MonoBehaviour
         //grapple.pe = height * -gravity;// PE = mgh, m=1
 
         startingPosition = player.transform.position - transform.position;
+        startingPosition.z = 0;
         grappleLength = startingPosition.magnitude;
 
         startingAngle = Vector3.Angle(Vector3.down, startingPosition);

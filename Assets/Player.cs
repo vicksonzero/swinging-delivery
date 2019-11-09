@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Controller2D))]
 [RequireComponent(typeof(GrappleThrower))]
@@ -9,6 +10,8 @@ public class Player : MonoBehaviour
     public IPlayerState state;
     public IPlayerState nextState;
     public FixedMouseButtons fixedMouse;
+
+    public Text stateLabel;
 
     public float jumpHeight = 2;
     public float timeToJumpApex = .5f;
@@ -42,6 +45,10 @@ public class Player : MonoBehaviour
         state = new PlayerStateStop(this);
         state.OnAttach();
         stateName = state.GetName();
+        if (stateLabel)
+        {
+            stateLabel.text = stateName;
+        }
         print("Gravity: " + gravity + "  Jump Velocity: " + jumpVelocity);
         fixedMouse = new FixedMouseButtons();
     }
@@ -129,6 +136,10 @@ public class Player : MonoBehaviour
 
         state = newState;
         stateName = state.GetName();
+        if (stateLabel)
+        {
+            stateLabel.text = stateName;
+        }
 
         state.OnAttach();
     }
