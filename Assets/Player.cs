@@ -16,8 +16,8 @@ public class Player : MonoBehaviour
     public int runningDir = 0;
     internal float accelerationTimeAirborne = 1.1f;
     internal float accelerationTimeGrounded = .7f;
-    internal float moveSpeed = 4;
-    internal float airMoveSpeed = 2;
+    internal float moveSpeed = 5;
+    internal float airMoveSpeed = 3;
     internal float dashSpeed = 2f;
 
     internal float gravity;

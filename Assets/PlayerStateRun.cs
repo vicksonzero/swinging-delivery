@@ -6,7 +6,7 @@ public class PlayerStateRun : IPlayerState
 
     public bool prepHop = false;
     public float startPrepHop = 0;
-    public float stopRequirement = 1f;
+    public float stopRequirement = 0.8f;
 
     public PlayerStateRun(Player p) : base(p)
     {
