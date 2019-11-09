@@ -37,7 +37,7 @@ public class Grapple : MonoBehaviour
         return Time.time - startTime < shootingInterval;
     }
 
-    public void InitSwing(Player player)
+    public void InitSwing(Player player, Vector3 currentVelocity)
     {
         //var height = transform.position.y - grapple.transform.position.y + grapple.grappleLength;
         //grapple.pe = height * -gravity;// PE = mgh, m=1

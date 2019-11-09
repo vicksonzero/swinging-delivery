@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(Player))]
 public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public Grapple grapplePrefab;
@@ -17,7 +16,7 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     }
 
     // Update is called once per frame
-    void Update()
+    void xUpdate()
     {
         if (player.grapple != null && Input.GetMouseButtonUp(0))
         {
@@ -68,17 +67,23 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             }
             player.SetGrapple(null);
         }
-        if (Input.GetMouseButtonDown(0))
-        {
-            var pos = Input.mousePosition;
-            pos.z = 10.0f;
-            pos = Camera.main.ScreenToWorldPoint(pos);
-            pos.z = 0;
-            var grappleInst = Instantiate(grapplePrefab, pos, Quaternion.identity);
-            grappleInst.startTime = Time.time;
-            grappleInst.shootingInterval = shootingInterval;
-            player.SetGrapple(grappleInst);
-        }
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    CreateGrapple();
+        //}
+    }
+
+    public Grapple CreateGrapple()
+    {
+        var pos = Input.mousePosition;
+        pos.z = 10.0f;
+        pos = Camera.main.ScreenToWorldPoint(pos);
+        pos.z = 0;
+        var grappleInst = Instantiate(grapplePrefab, pos, Quaternion.identity);
+        grappleInst.startTime = Time.time;
+        grappleInst.shootingInterval = shootingInterval;
+
+        return grappleInst;
     }
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)

@@ -1,0 +1,75 @@
+﻿using UnityEngine;
+
+public class PlayerStateSwing : IPlayerState
+{
+    public override string GetName() => "Swing";
+
+    public float additionalHeightThreshold = 6f;
+
+    public PlayerStateSwing(Player p) : base(p)
+    {
+    }
+
+    public override void OnAttach()
+    {
+    }
+
+    public override IPlayerState HandleInput()
+    {
+        var fixedMouse = player.fixedMouse;
+        var grapple = player.grapple;
+        var projectedPos = player.transform.position + player.velocity * Time.deltaTime;
+        var distToGrapple = (player.grapple == null) ? 0 : Vector3.Distance(projectedPos, player.grapple.transform.position);
+
+        var collisions = player.controller.collisions;
+        if (collisions.left || collisions.right)
+        {
+            player.runningDir = (int)Mathf.Sign(player.velocity.x); // set runningDir
+            player.SetGrapple(null);
+            player.velocity.y = player.moveSpeed;
+            return new PlayerStateWallRun(player);
+        }
+        if (player.controller.collisions.below)
+        {
+            player.SetGrapple(null);
+            player.runningDir = (int)Mathf.Sign(player.velocity.x); // set runningDir
+            return new PlayerStateRun(player);
+        }
+        //Debug.Log("PlayerStateStop.HandleInput " + fixedMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
+
+        if (fixedMouse.wasUp)
+        {
+            if (grapple.time / grapple.totalTIme > 1 && player.velocity.magnitude < additionalHeightThreshold)
+            {
+                var playerToGrapple = grapple.transform.position - player.transform.position;
+
+                var dirX = Mathf.Sign(-playerToGrapple.x) * Mathf.Sin(grapple.time / grapple.totalTIme * Mathf.PI);
+                if (dirX == 0)
+                {
+                    dirX = 1;
+                }
+
+                var dir = new Vector3(0.5f, 1);
+                dir.x = player.runningDir * Mathf.Abs(dir.x);
+                player.Hop(dir);
+            }
+            else
+            {
+                // just release
+            }
+            player.runningDir = (int)Mathf.Sign(player.velocity.x); // set runningDir
+            player.SetGrapple(null);
+            return new PlayerStateHop(player);
+        }
+        return null;
+    }
+
+    public override void HandleMovement()
+    {
+        player.DoSwing();
+    }
+
+    public override void OnDetach()
+    {
+    }
+}
