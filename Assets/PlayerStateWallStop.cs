@@ -16,11 +16,11 @@ public class PlayerStateWallStop : IPlayerState
 
     public override IPlayerState HandleInput()
     {
-        var fixedMouse = player.fixedMouse;
+        var fuMouse = player.fuMouse;
         var grapple = player.grapple;
-        //Debug.Log("PlayerStateStop.HandleInput " + fixedMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
+        //Debug.Log("PlayerStateStop.HandleInput " + fuMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
 
-        if (fixedMouse.wasUp && prepHop)
+        if (fuMouse.wasUp && prepHop)
         {
             var dir = new Vector3(1, 1);
             dir.x = -player.runningDir * Mathf.Abs(dir.x);
@@ -35,7 +35,7 @@ public class PlayerStateWallStop : IPlayerState
             player.JumpDiagonal(dir);
             return new PlayerStateHop(player);
         }
-        if (fixedMouse.wasUp && player.grapple)
+        if (fuMouse.wasUp && player.grapple)
         {
             if (player.grapple.IsShooting())
             {
@@ -53,13 +53,13 @@ public class PlayerStateWallStop : IPlayerState
                 return new PlayerStateHop(player);
             }
         }
-        if (fixedMouse.wasDown)
+        if (fuMouse.wasDown)
         {
-            var clickingIntoWall = player.runningDir * (fixedMouse.x - player.transform.position.x) > 0;
+            var clickingIntoWall = player.runningDir * (fuMouse.x - player.transform.position.x) > 0;
             if (clickingIntoWall)
             {
                 prepHop = true;
-                player.runningDir = (int)Mathf.Sign(fixedMouse.x - player.transform.position.x);
+                player.runningDir = (int)Mathf.Sign(fuMouse.x - player.transform.position.x);
                 Debug.Log("prepHop");
                 // TODO: set player sprite to PREP_HOP here
             }

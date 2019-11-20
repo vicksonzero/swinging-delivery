@@ -16,15 +16,15 @@ public class PlayerStateStop : IPlayerState
 
     public override IPlayerState HandleInput()
     {
-        var fixedMouse = player.fixedMouse;
+        var fuMouse = player.fuMouse;
         var grapple = player.grapple;
-        //Debug.Log("PlayerStateStop.HandleInput " + fixedMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
+        //Debug.Log("PlayerStateStop.HandleInput " + fuMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
 
-        if (fixedMouse.wasUp && prepRun)
+        if (fuMouse.wasUp && prepRun)
         {
             return new PlayerStateRun(player);
         }
-        if (fixedMouse.wasUp && player.grapple)
+        if (fuMouse.wasUp && player.grapple)
         {
             if (player.grapple.IsShooting())
             {
@@ -40,12 +40,12 @@ public class PlayerStateStop : IPlayerState
                 return new PlayerStateHop(player);
             }
         }
-        if (fixedMouse.wasDown)
+        if (fuMouse.wasDown)
         {
-            if (fixedMouse.y < player.transform.position.y)
+            if (fuMouse.y < player.transform.position.y)
             {
                 prepRun = true;
-                player.runningDir = (int)Mathf.Sign(fixedMouse.x - player.transform.position.x);
+                player.runningDir = (int)Mathf.Sign(fuMouse.x - player.transform.position.x);
                 Debug.Log("prepRun");
                 // TODO: set player sprite to PREP_HOP here
             }

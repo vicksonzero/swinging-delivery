@@ -16,7 +16,7 @@ public class PlayerStateSwing : IPlayerState
 
     public override IPlayerState HandleInput()
     {
-        var fixedMouse = player.fixedMouse;
+        var fuMouse = player.fuMouse;
         var grapple = player.grapple;
         var projectedPos = player.transform.position + player.velocity * Time.deltaTime;
         var distToGrapple = (player.grapple == null) ? 0 : Vector3.Distance(projectedPos, player.grapple.transform.position);
@@ -35,9 +35,9 @@ public class PlayerStateSwing : IPlayerState
             player.runningDir = (int)Mathf.Sign(player.velocity.x); // set runningDir
             return new PlayerStateRun(player);
         }
-        //Debug.Log("PlayerStateStop.HandleInput " + fixedMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
+        //Debug.Log("PlayerStateStop.HandleInput " + fuMouse.wasDown + " " + player.transform.position.y + " " + fixedMouse.y);
 
-        if (fixedMouse.wasUp)
+        if (fuMouse.wasUp)
         {
             if (grapple.time / grapple.totalTIme > 0.5f && player.velocity.magnitude < additionalHeightThreshold)
             {
@@ -56,6 +56,7 @@ public class PlayerStateSwing : IPlayerState
             else
             {
                 // just release
+                player.velocity = player.velocity.normalized * Mathf.Min(player.velocity.magnitude, 20f);
             }
             player.runningDir = (int)Mathf.Sign(player.velocity.x); // set runningDir
             player.SetGrapple(null);

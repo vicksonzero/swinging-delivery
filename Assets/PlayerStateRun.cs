@@ -18,7 +18,7 @@ public class PlayerStateRun : IPlayerState
 
     public override IPlayerState HandleInput()
     {
-        var fixedMouse = player.fixedMouse;
+        var fuMouse = player.fuMouse;
         var grapple = player.grapple;
         var collisions = player.controller.collisions;
         if (collisions.left || collisions.right)
@@ -35,7 +35,7 @@ public class PlayerStateRun : IPlayerState
             return new PlayerStateHop(player);
         }
 
-        if (fixedMouse.wasUp && prepHop)
+        if (fuMouse.wasUp && prepHop)
         {
             var dir = new Vector3(player.runningDir, 1);
             player.Hop(dir);
@@ -47,7 +47,7 @@ public class PlayerStateRun : IPlayerState
             player.Hop(dir);
             return new PlayerStateHop(player);
         }
-        if (fixedMouse.wasUp && grapple)
+        if (fuMouse.wasUp && grapple)
         {
             if (grapple.IsShooting())
             {
@@ -62,13 +62,13 @@ public class PlayerStateRun : IPlayerState
                 player.SetGrapple(null);
             }
         }
-        if (fixedMouse.wasDown)
+        if (fuMouse.wasDown)
         {
-            if (fixedMouse.y < player.transform.position.y)
+            if (fuMouse.y < player.transform.position.y)
             {
                 startPrepHop = Time.fixedTime;
                 prepHop = true;
-                player.runningDir = (int)Mathf.Sign(fixedMouse.x - player.transform.position.x);
+                player.runningDir = (int)Mathf.Sign(fuMouse.x - player.transform.position.x);
                 Debug.Log("prepHop");
                 // TODO: set player sprite to PREP_HOP here
             }

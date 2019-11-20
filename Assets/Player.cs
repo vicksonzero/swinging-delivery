@@ -9,7 +9,7 @@ public class Player : MonoBehaviour
 
     public IPlayerState state;
     public IPlayerState nextState;
-    public FixedMouseButtons fixedMouse;
+    public FixedMouseButtons fuMouse;
 
     public Text stateLabel;
 
@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
             stateLabel.text = stateName;
         }
         print("Gravity: " + gravity + "  Jump Velocity: " + jumpVelocity);
-        fixedMouse = new FixedMouseButtons();
+        fuMouse = new FixedMouseButtons();
     }
 
     void Update()
@@ -69,9 +69,9 @@ public class Player : MonoBehaviour
             pos = Camera.main.ScreenToWorldPoint(pos);
             pos.z = 0;
 
-            fixedMouse.wasUp = true;
-            fixedMouse.x = pos.x;
-            fixedMouse.y = pos.y;
+            fuMouse.wasUp = true;
+            fuMouse.x = pos.x;
+            fuMouse.y = pos.y;
         }
         if (Input.GetMouseButtonDown(0))
         {
@@ -80,9 +80,9 @@ public class Player : MonoBehaviour
             pos = Camera.main.ScreenToWorldPoint(pos);
             pos.z = 0;
 
-            fixedMouse.wasDown = true;
-            fixedMouse.x = pos.x;
-            fixedMouse.y = pos.y;
+            fuMouse.wasDown = true;
+            fuMouse.x = pos.x;
+            fuMouse.y = pos.y;
         }
 
         // grapple graphics
@@ -118,13 +118,14 @@ public class Player : MonoBehaviour
             velocity.y = 0;
         }
         nextState = state.HandleInput();
-        fixedMouse = new FixedMouseButtons();
+        fuMouse = new FixedMouseButtons();
         if (nextState != null)
         {
             ChangeState(nextState);
             nextState = null;
         }
         state.HandleMovement();
+        stateLabel.text = stateName + " " +velocity.magnitude.ToString("00.00");
     }
 
     private void ChangeState(IPlayerState newState)
@@ -180,14 +181,15 @@ public class Player : MonoBehaviour
             grapple.InitSwing(this, velocity);
         }
         grapple.time += Time.deltaTime;
-        var angle = -Mathf.Sign(grapple.startingPosition.x) * grapple.totalAngle * Mathf.Pow(Mathf.Sin(grapple.time / grapple.totalTIme * Mathf.PI), 2);
+        var angle = grapple.totalAngle * Mathf.Pow(Mathf.Sin(grapple.time / grapple.totalTIme), 2);
         //Debug.Log("time:" + (grapple.time / grapple.totalTIme) + " angle:" + angle);
-        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + grapple.startingPosition, Color.red);
-        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + Quaternion.AngleAxis(-Mathf.Sign(grapple.startingPosition.x) * grapple.totalAngle, Vector3.forward) * grapple.startingPosition, Color.green);
-        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + Quaternion.AngleAxis(angle, Vector3.forward) * grapple.startingPosition);
+        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + grapple.extremePosition, Color.red);
+        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + grapple.startingPosition, Color.blue);
+        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + Quaternion.AngleAxis(-Mathf.Sign(grapple.extremePosition.x) * grapple.totalAngle, Vector3.forward) * grapple.extremePosition, Color.green);
+        //Debug.DrawLine(grapple.transform.position, grapple.transform.position + Quaternion.AngleAxis(angle, Vector3.forward) * grapple.extremePosition);
 
 
-        var swingPos = Quaternion.AngleAxis(angle, Vector3.forward) * grapple.startingPosition;
+        var swingPos = Quaternion.AngleAxis(angle, Vector3.forward) * grapple.extremePosition;
         var displacement = grapple.transform.position + swingPos - transform.position;
         velocity = displacement / Time.deltaTime;
 

@@ -14,7 +14,7 @@ public class PlayerStateHop : IPlayerState
 
     public override IPlayerState HandleInput()
     {
-        var fixedMouse = player.fixedMouse;
+        var fuMouse = player.fuMouse;
         var grapple = player.grapple;
         var collisions = player.controller.collisions;
         if (collisions.below)
@@ -41,7 +41,7 @@ public class PlayerStateHop : IPlayerState
                 return new PlayerStateSwing(player);
             }
         }
-        if (fixedMouse.wasUp && grapple)
+        if (fuMouse.wasUp && grapple)
         {
             if (grapple.IsShooting())
             {
@@ -56,7 +56,7 @@ public class PlayerStateHop : IPlayerState
                 player.SetGrapple(null);
             }
         }
-        if (fixedMouse.wasDown)
+        if (fuMouse.wasDown)
         {
             player.CreateGrapple();
         }
@@ -78,7 +78,7 @@ public class PlayerStateHop : IPlayerState
         }
         if (grapple != null && grapple.IsShooting())
         {
-            displacement *= 2f / displacement.magnitude;
+            displacement *= 4f / displacement.magnitude;
         }
         player.controller.Move(displacement * Time.deltaTime);
         if (grapple != null)
