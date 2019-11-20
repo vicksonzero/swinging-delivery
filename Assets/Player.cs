@@ -190,7 +190,9 @@ public class Player : MonoBehaviour
 
 
         var swingPos = Quaternion.AngleAxis(angle, Vector3.forward) * grapple.extremePosition;
+        swingPos.z = 0;
         var displacement = grapple.transform.position + swingPos - transform.position;
+        displacement.z = 0;
         velocity = displacement / Time.deltaTime;
 
         controller.Move(displacement);

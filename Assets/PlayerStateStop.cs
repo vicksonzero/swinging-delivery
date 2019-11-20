@@ -22,6 +22,7 @@ public class PlayerStateStop : IPlayerState
 
         if (fuMouse.wasUp && prepRun)
         {
+            GameObject.FindObjectOfType<BAppleCounter>().StartTImer();
             return new PlayerStateRun(player);
         }
         if (fuMouse.wasUp && player.grapple)
