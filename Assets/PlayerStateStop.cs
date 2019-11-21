@@ -23,6 +23,7 @@ public class PlayerStateStop : IPlayerState
         if (fuMouse.wasUp && prepRun)
         {
             GameObject.FindObjectOfType<BAppleCounter>().StartTImer();
+
             return new PlayerStateRun(player);
         }
         if (fuMouse.wasUp && player.grapple)
@@ -52,7 +53,7 @@ public class PlayerStateStop : IPlayerState
             }
             else
             {
-                player.CreateGrapple();
+                player.CreateGrapple(fuMouse.x, fuMouse.y);
             }
         }
 

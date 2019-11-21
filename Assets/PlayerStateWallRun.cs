@@ -75,7 +75,7 @@ public class PlayerStateWallRun : IPlayerState
             }
             else
             {
-                player.CreateGrapple();
+                player.CreateGrapple(fuMouse.x, fuMouse.y);
             }
         }
 
@@ -101,7 +101,7 @@ public class PlayerStateWallRun : IPlayerState
         {
             displacement *= 1f / displacement.magnitude;
         }
-        player.controller.Move(displacement * Time.deltaTime);
+        player.controller.Move(displacement * Time.fixedDeltaTime);
     }
 
     public override void OnDetach()

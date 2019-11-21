@@ -73,12 +73,9 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         //}
     }
 
-    public Grapple CreateGrapple()
+    public Grapple CreateGrapple(float x, float y)
     {
-        var pos = Input.mousePosition;
-        pos.z = 10.0f;
-        pos = Camera.main.ScreenToWorldPoint(pos);
-        pos.z = -9;
+        var pos = new Vector3(x, y, -9);
         var grappleInst = Instantiate(grapplePrefab, pos, Quaternion.identity);
         grappleInst.startTime = Time.fixedTime;
         grappleInst.shootingInterval = shootingInterval;

@@ -31,7 +31,7 @@ public class PlayerStateHop : IPlayerState
         }
         if (grapple != null && !grapple.IsShooting())
         {
-            var projectedPos = player.transform.position + player.velocity * Time.deltaTime;
+            var projectedPos = player.transform.position + player.velocity * Time.fixedDeltaTime;
             var distToGrapple = (grapple == null) ? 0 : Vector3.Distance(projectedPos, grapple.transform.position);
 
             var isFalling = player.velocity.y < 0;
@@ -58,7 +58,7 @@ public class PlayerStateHop : IPlayerState
         }
         if (fuMouse.wasDown)
         {
-            player.CreateGrapple();
+            player.CreateGrapple(fuMouse.x, fuMouse.y);
         }
         return null;
     }
@@ -68,7 +68,7 @@ public class PlayerStateHop : IPlayerState
         float augmentedGravity = GetGravity();
         var grapple = player.grapple;
 
-        player.velocity.y += augmentedGravity * Time.deltaTime;
+        player.velocity.y += augmentedGravity * Time.fixedDeltaTime;
         player.velocity.y = Mathf.Max(player.velocity.y, -8);
 
         var displacement = player.velocity;
@@ -80,7 +80,7 @@ public class PlayerStateHop : IPlayerState
         {
             displacement *= 4f / displacement.magnitude;
         }
-        player.controller.Move(displacement * Time.deltaTime);
+        player.controller.Move(displacement * Time.fixedDeltaTime);
         if (grapple != null)
         {
             grapple.wasSwinging = false;

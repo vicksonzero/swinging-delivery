@@ -74,7 +74,7 @@ public class PlayerStateRun : IPlayerState
             }
             else
             {
-                player.CreateGrapple();
+                player.CreateGrapple(fuMouse.x, fuMouse.y);
             }
         }
 
@@ -98,7 +98,7 @@ public class PlayerStateRun : IPlayerState
 
         float augmentedGravity = GetGravity();
 
-        player.velocity.y += augmentedGravity * Time.deltaTime;
+        player.velocity.y += augmentedGravity * Time.fixedDeltaTime;
         player.velocity.y = Mathf.Max(player.velocity.y, -8);
 
         var displacement = player.velocity;
@@ -110,7 +110,7 @@ public class PlayerStateRun : IPlayerState
         {
             displacement *= 1f / displacement.magnitude;
         }
-        player.controller.Move(displacement * Time.deltaTime);
+        player.controller.Move(displacement * Time.fixedDeltaTime);
         if (grapple != null)
         {
             grapple.wasSwinging = false;

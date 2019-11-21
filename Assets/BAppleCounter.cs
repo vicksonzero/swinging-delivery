@@ -7,33 +7,39 @@ public class BAppleCounter : MonoBehaviour
     public Text label;
     public int appleCount = 0;
     public int appleTotal;
-    public float startTime = 0;
-    public float endTime = 0;
+    public float startTime = -1;
+    public float endTime = -1;
     public GameObject titleScreen;
 
     public Button retryButton;
+
+    public RectTransform resultPanel;
+    public InputField replayBox;
+
+    private BReplay replay;
 
     // Start is called before the first frame update
     void Start()
     {
         appleTotal = FindObjectsOfType<BApple>().Length;
         //retryButton.gameObject.SetActive(false);
+        replay = FindObjectOfType<BReplay>();
     }
 
     public void StartTImer()
     {
-        if (startTime == 0)
+        if (startTime == -1)
         {
-            startTime = Time.time;
+            startTime = Time.fixedTime;
             titleScreen.SetActive(false);
         }
     }
 
     public void EndTImer()
     {
-        if (endTime == 0)
+        if (endTime == -1)
         {
-            endTime = Time.time;
+            endTime = Time.fixedTime;
         }
     }
 
@@ -55,7 +61,22 @@ public class BAppleCounter : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var time = startTime == 0 ? 0 : endTime == 0 ? Time.time - startTime : endTime - startTime;
+        var time = startTime == -1 ? 0 : endTime == -1 ? Time.fixedTime - startTime : endTime - startTime;
         label.text = "Apples found: " + appleCount + " / " + appleTotal + "\nTime: " + time.ToString("0.00");
+
+    }
+
+
+    public void ShowResult()
+    {
+        var save = replay.ToJson();
+        replayBox.SetTextWithoutNotify(save);
+        PlayerPrefs.SetString("save_replay", save);
+        resultPanel.gameObject.SetActive(true);
+    }
+
+    public void HideResult()
+    {
+        resultPanel.gameObject.SetActive(false);
     }
 }

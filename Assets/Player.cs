@@ -33,11 +33,13 @@ public class Player : MonoBehaviour
 
     internal Controller2D controller;
     private GrappleThrower grappleThrower;
+    internal BReplay replay;
 
     void Start()
     {
         controller = GetComponent<Controller2D>();
         grappleThrower = GetComponent<GrappleThrower>();
+        replay = FindObjectOfType<BReplay>();
 
         gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
         jumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
@@ -70,8 +72,8 @@ public class Player : MonoBehaviour
             pos.z = 0;
 
             fuMouse.wasUp = true;
-            fuMouse.x = pos.x;
-            fuMouse.y = pos.y;
+            fuMouse.str_x = (int)(pos.x * 1000);
+            fuMouse.str_y = (int)(pos.y * 1000);
         }
         if (Input.GetMouseButtonDown(0))
         {
@@ -81,8 +83,8 @@ public class Player : MonoBehaviour
             pos.z = 0;
 
             fuMouse.wasDown = true;
-            fuMouse.x = pos.x;
-            fuMouse.y = pos.y;
+            fuMouse.str_x = (int)(pos.x * 1000);
+            fuMouse.str_y = (int)(pos.y * 1000);
         }
 
         // grapple graphics
@@ -103,6 +105,12 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
+        replay.HandleInput(ref fuMouse);
+        if (fuMouse.wasDown || fuMouse.wasUp)
+        {
+            fuMouse.x = 0.001f * fuMouse.str_x;
+            fuMouse.y = 0.001f * fuMouse.str_y;
+        }
         //Debug.Log(
         //    controller.collisions.above + " " +
         //    controller.collisions.below + " " +
@@ -125,7 +133,7 @@ public class Player : MonoBehaviour
             nextState = null;
         }
         state.HandleMovement();
-        stateLabel.text = stateName + " " +velocity.magnitude.ToString("00.00");
+        stateLabel.text = stateName + " " + velocity.magnitude.ToString("00.00");
     }
 
     private void ChangeState(IPlayerState newState)
@@ -155,7 +163,7 @@ public class Player : MonoBehaviour
 
         float augmentedGravity = state.GetGravity();
 
-        velocity.y += augmentedGravity * Time.deltaTime;
+        velocity.y += augmentedGravity * Time.fixedDeltaTime;
         velocity.y = Mathf.Max(velocity.y, -8);
 
         var displacement = velocity;
@@ -167,7 +175,7 @@ public class Player : MonoBehaviour
         {
             displacement *= 0.01f / displacement.magnitude;
         }
-        controller.Move(displacement * Time.deltaTime);
+        controller.Move(displacement * Time.fixedDeltaTime);
         if (grapple != null)
         {
             grapple.wasSwinging = false;
@@ -180,7 +188,7 @@ public class Player : MonoBehaviour
         {
             grapple.InitSwing(this, velocity);
         }
-        grapple.time += Time.deltaTime;
+        grapple.time += Time.fixedDeltaTime;
         var angle = grapple.totalAngle * Mathf.Pow(Mathf.Sin(grapple.time / grapple.totalTIme), 2);
         //Debug.Log("time:" + (grapple.time / grapple.totalTIme) + " angle:" + angle);
         //Debug.DrawLine(grapple.transform.position, grapple.transform.position + grapple.extremePosition, Color.red);
@@ -193,7 +201,7 @@ public class Player : MonoBehaviour
         swingPos.z = 0;
         var displacement = grapple.transform.position + swingPos - transform.position;
         displacement.z = 0;
-        velocity = displacement / Time.deltaTime;
+        velocity = displacement / Time.fixedDeltaTime;
 
         controller.Move(displacement);
         //velocity = velocity.normalized * originalSpeed;
@@ -214,9 +222,9 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void CreateGrapple()
+    public void CreateGrapple(float x, float y)
     {
-        var grappleInst = grappleThrower.CreateGrapple();
+        var grappleInst = grappleThrower.CreateGrapple(x, y);
         SetGrapple(grappleInst);
     }
 
@@ -242,7 +250,9 @@ public class Player : MonoBehaviour
 
     public struct FixedMouseButtons
     {
+        public int str_x;
         public float x;
+        public int str_y;
         public float y;
         public bool wasDown;
         public bool wasUp;

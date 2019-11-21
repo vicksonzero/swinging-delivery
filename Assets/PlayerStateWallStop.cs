@@ -65,7 +65,7 @@ public class PlayerStateWallStop : IPlayerState
             }
             else
             {
-                player.CreateGrapple();
+                player.CreateGrapple(fuMouse.x, fuMouse.y);
             }
         }
 
