@@ -24,8 +24,13 @@ Please try to only use basic controls to move around before reading Advanced Con
 - Release Swing at the very end to get a height boost
 - Input window of dash is indicated by the white line connecting the tip of the grapple
 
+## Setup
+
+1. Clone `_ContentfulKey.example.cs` as `_ContentfulKey.cs`
+2. In `_ContentfulKey.cs`, rename class `_ContentfulKeyExample` to `_ContentfulKey`
+
 ## TODO
-- Wall run, platform run
+- (DONE) Wall run, platform run
 - One-way platforms
 - Bigger world
 - Delivery-based mission objectives

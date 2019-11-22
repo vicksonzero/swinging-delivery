@@ -52,3 +52,5 @@ crashlytics-build.properties
 # Project
 _incoming
 incoming
+/Assets/_ContentfulKey.cs.meta
+/Assets/_ContentfulKey.cs

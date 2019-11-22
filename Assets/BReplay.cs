@@ -126,11 +126,35 @@ public class BReplay : MonoBehaviour
         frameID++;
     }
 
-    public string ToJson()
+    public Replay GetReplay()
     {
         replay.frames = frames.ToArray();
         replay.positions = positions.ToArray();
-        return JsonUtility.ToJson(replay);
+        replay.clearTime = frameID;
+        return replay;
+    }
+
+    public ReplayInputs GetReplayInputs()
+    {
+        var replayInputs = new ReplayInputs();
+        replayInputs.startX = replay.startX;
+        replayInputs.startY = replay.startY;
+        replayInputs.clearTime = frameID;
+        replayInputs.frames = frames.ToArray();
+        return replayInputs;
+    }
+
+    public ReplayPositions GetReplayPositions()
+    {
+        var replayPositions = new ReplayPositions();
+        replayPositions.positions = positions.ToArray();
+        return replayPositions;
+    }
+
+    public string ToJson()
+    {
+        var _replay = GetReplay();
+        return JsonUtility.ToJson(_replay);
     }
 
     public Replay FromJson(string save)
@@ -159,7 +183,21 @@ public class BReplay : MonoBehaviour
     {
         public int startX;
         public int startY;
+        public int clearTime;
         public Frame[] frames;
+        public Position[] positions;
+    }
+    [Serializable]
+    public struct ReplayInputs
+    {
+        public int startX;
+        public int startY;
+        public int clearTime;
+        public Frame[] frames;
+    }
+    [Serializable]
+    public struct ReplayPositions
+    {
         public Position[] positions;
     }
 

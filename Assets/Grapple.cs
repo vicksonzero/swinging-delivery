@@ -45,7 +45,7 @@ public class Grapple : MonoBehaviour
 
     public bool IsShooting()
     {
-        Debug.Log("IsShooting " + (BReplay.FixedTime() - startTime) + " " + BReplay.FixedDeltaTime() + " " + BReplay.FixedTime() + " " + startTime);
+        //Debug.Log("IsShooting " + (BReplay.FixedTime() - startTime) + " " + BReplay.FixedDeltaTime() + " " + BReplay.FixedTime() + " " + startTime);
         return BReplay.FixedTime() - startTime < shootingInterval;
     }
 
