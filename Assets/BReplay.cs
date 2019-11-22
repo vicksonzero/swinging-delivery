@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,6 +11,7 @@ public class BReplay : MonoBehaviour
     public enum PlayMode { RECORD, REPLAY }
 
     private List<Frame> frames;
+    private List<Position> positions;
     private Replay replay;
     // Start is called before the first frame update
     void Start()
@@ -56,6 +57,7 @@ public class BReplay : MonoBehaviour
 
     internal void HandleInput(ref Player.FixedMouseButtons fuMouse)
     {
+        var player = GetComponent<Player>();
         switch (playMode)
         {
             case PlayMode.RECORD:
@@ -63,17 +65,22 @@ public class BReplay : MonoBehaviour
                 {
                     if (frames.Count <= 0)
                     {
-                        StartRecording(GetComponent<Player>());
+                        StartRecording(player);
                     }
                     var frame = new Frame(frameID, false, fuMouse);
                     Debug.Log("Record # " + frame.frameID + " (" + (frame.wasDown ? "Down" : "Up") + ") x=" + frame.x + " y=" + frame.y);
                     frames.Add(frame);
+                    
+                    var pos = player.transform.position;
+                    var velocity = player.velocity;
+                    positions.Add(new Position(frameID, (int) pos.x * 1000, (int) pos.y * 1000, velocity.x.toString(), velocity.y.toString()));
                 }
                 break;
             case PlayMode.REPLAY:
                 if (frames.Count() > 0)
                 {
                     var tail = frames.First();
+                    var posTail = positions.First();
                     if (frameID == tail.frameID)
                     {
                         Debug.Log("Replay # " + tail.frameID + " (" + (tail.wasDown ? "Down" : "Up") + ") x=" + tail.x + " y=" + tail.y);
@@ -81,7 +88,30 @@ public class BReplay : MonoBehaviour
                         fuMouse.str_y = tail.y;
                         fuMouse.wasDown = tail.wasDown;
                         fuMouse.wasUp = tail.wasUp;
+                        
+                        
+                        var pos = player.transform.position;
+                        var velocity = player.velocity;
+                        var _pos = new Position(frameID, (int) pos.x * 1000, (int) pos.y * 1000, velocity.x.toString(), velocity.y.toString());
+
+                        Debug.Log("Replay # " + posTail.frameID + " "+
+                            "Position: x=" + _pos.x+ " y=" + _pos.y+ " vx=" + _pos.vx+ " vy=" + _pos.vy+ " | "+
+                            "REC Position: x=" + posTail.x+ " y=" +posTail.y + " vx=" +posTail.vx + " vy="+posTail.vy+
+                            "");
+                            
+                        bool outSync = (
+                            _pos.x != posTail.x ||
+                            _pos.y != posTail.y ||
+                            !String.Equals(_pos.vx, posTail.vx) ||
+                            !String.Equals(_pos.vy, posTail.vy)
+                        );
+                        
+                        if(outSync){
+                            Debug.Log("Out sync!");
+                        }   
+                        
                         frames.RemoveAt(0);
+                        positions.RemoveAt(0);
                         if (frames.Count() <= 0)
                         {
                             Debug.Log("Replay Ended.");
@@ -96,6 +126,7 @@ public class BReplay : MonoBehaviour
     public string ToJson()
     {
         replay.frames = frames.ToArray();
+        replay.positions = positions.ToArray();
         return JsonUtility.ToJson(replay);
     }
 
@@ -111,6 +142,7 @@ public class BReplay : MonoBehaviour
         public int startX;
         public int startY;
         public Frame[] frames;
+        public Position[] positions;
     }
 
     [Serializable]
@@ -132,4 +164,23 @@ public class BReplay : MonoBehaviour
         public bool wasDown;
         public bool wasUp;
     }
+    
+    [Serializable]
+    public struct Position
+    {
+        public Position(int frameID, int x, int y, string vx, string vy)
+        {
+            this.frameID = frameID;
+            this.x = x;
+            this.y = y;
+            this.vx = vx;
+            this.vy = vy;
+        }
+        public int frameID;
+        public int x;
+        public int y;
+        public string vx;
+        public string vy;
+    }
+    
 }
