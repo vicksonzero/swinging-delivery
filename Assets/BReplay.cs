@@ -17,6 +17,7 @@ public class BReplay : MonoBehaviour
     void Start()
     {
         frames = new List<Frame>();
+        positions = new List<Position>();
         replay = new Replay();
         if (PlayerPrefs.HasKey("save_replay"))
         {
@@ -48,6 +49,7 @@ public class BReplay : MonoBehaviour
     {
         replay = FromJson(save);
         frames = replay.frames.ToList();
+        positions = replay.positions.ToList();
         Debug.Log("StartPlaying(" + frames.Count + ")");
         frameID = 0;
 
@@ -70,10 +72,10 @@ public class BReplay : MonoBehaviour
                     var frame = new Frame(frameID, false, fuMouse);
                     Debug.Log("Record # " + frame.frameID + " (" + (frame.wasDown ? "Down" : "Up") + ") x=" + frame.x + " y=" + frame.y);
                     frames.Add(frame);
-                    
+
                     var pos = player.transform.position;
                     var velocity = player.velocity;
-                    positions.Add(new Position(frameID, (int) pos.x * 1000, (int) pos.y * 1000, velocity.x.toString(), velocity.y.toString()));
+                    positions.Add(new Position(frameID, (int)(pos.x * 1000), (int)(pos.y * 1000), velocity.x.ToString(), velocity.y.ToString()));
                 }
                 break;
             case PlayMode.REPLAY:
@@ -88,28 +90,29 @@ public class BReplay : MonoBehaviour
                         fuMouse.str_y = tail.y;
                         fuMouse.wasDown = tail.wasDown;
                         fuMouse.wasUp = tail.wasUp;
-                        
-                        
+
+
                         var pos = player.transform.position;
                         var velocity = player.velocity;
-                        var _pos = new Position(frameID, (int) pos.x * 1000, (int) pos.y * 1000, velocity.x.toString(), velocity.y.toString());
+                        var _pos = new Position(frameID, (int)(pos.x * 1000), (int)(pos.y * 1000), velocity.x.ToString(), velocity.y.ToString());
 
-                        Debug.Log("Replay # " + posTail.frameID + " "+
-                            "Position: x=" + _pos.x+ " y=" + _pos.y+ " vx=" + _pos.vx+ " vy=" + _pos.vy+ " | "+
-                            "REC Position: x=" + posTail.x+ " y=" +posTail.y + " vx=" +posTail.vx + " vy="+posTail.vy+
+                        Debug.Log("Replay # " + posTail.frameID + " " +
+                            "Position: x=" + _pos.x + " y=" + _pos.y + " vx=" + _pos.vx + " vy=" + _pos.vy + " | " +
+                            "REC Position: x=" + posTail.x + " y=" + posTail.y + " vx=" + posTail.vx + " vy=" + posTail.vy +
                             "");
-                            
+
                         bool outSync = (
                             _pos.x != posTail.x ||
                             _pos.y != posTail.y ||
                             !String.Equals(_pos.vx, posTail.vx) ||
                             !String.Equals(_pos.vy, posTail.vy)
                         );
-                        
-                        if(outSync){
+
+                        if (outSync)
+                        {
                             Debug.Log("Out sync!");
-                        }   
-                        
+                        }
+
                         frames.RemoveAt(0);
                         positions.RemoveAt(0);
                         if (frames.Count() <= 0)
@@ -133,6 +136,21 @@ public class BReplay : MonoBehaviour
     public Replay FromJson(string save)
     {
         return JsonUtility.FromJson<Replay>(save);
+    }
+
+    private static BReplay _inst;
+    public static float FixedTime()
+    {
+        if (!_inst)
+        {
+            _inst = FindObjectOfType<BReplay>();
+        }
+
+        return FixedDeltaTime() * _inst.frameID;
+    }
+    public static float FixedDeltaTime()
+    {
+        return 0.02f;
     }
 
 
@@ -164,7 +182,7 @@ public class BReplay : MonoBehaviour
         public bool wasDown;
         public bool wasUp;
     }
-    
+
     [Serializable]
     public struct Position
     {
@@ -182,5 +200,5 @@ public class BReplay : MonoBehaviour
         public string vx;
         public string vy;
     }
-    
+
 }

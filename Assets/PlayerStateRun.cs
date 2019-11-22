@@ -66,7 +66,7 @@ public class PlayerStateRun : IPlayerState
         {
             if (fuMouse.y < player.transform.position.y)
             {
-                startPrepHop = Time.fixedTime;
+                startPrepHop = BReplay.FixedTime();
                 prepHop = true;
                 player.runningDir = (int)Mathf.Sign(fuMouse.x - player.transform.position.x);
                 Debug.Log("prepHop");
@@ -78,7 +78,7 @@ public class PlayerStateRun : IPlayerState
             }
         }
 
-        if (prepHop && Time.fixedTime - startPrepHop >= stopRequirement)
+        if (prepHop && BReplay.FixedTime() - startPrepHop >= stopRequirement)
         {
             player.velocity = Vector3.zero;
             return new PlayerStateStop(player);
@@ -98,7 +98,7 @@ public class PlayerStateRun : IPlayerState
 
         float augmentedGravity = GetGravity();
 
-        player.velocity.y += augmentedGravity * Time.fixedDeltaTime;
+        player.velocity.y += augmentedGravity * BReplay.FixedDeltaTime();
         player.velocity.y = Mathf.Max(player.velocity.y, -8);
 
         var displacement = player.velocity;
@@ -110,7 +110,7 @@ public class PlayerStateRun : IPlayerState
         {
             displacement *= 1f / displacement.magnitude;
         }
-        player.controller.Move(displacement * Time.fixedDeltaTime);
+        player.controller.Move(displacement * BReplay.FixedDeltaTime());
         if (grapple != null)
         {
             grapple.wasSwinging = false;

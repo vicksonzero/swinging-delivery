@@ -79,7 +79,7 @@ public class PlayerStateWallRun : IPlayerState
             }
         }
 
-        if (prepHop && Time.fixedTime - startPrepHop >= stopRequirement)
+        if (prepHop && BReplay.FixedTime() - startPrepHop >= stopRequirement)
         {
             player.velocity = Vector3.zero;
             return new PlayerStateWallStop(player);
@@ -101,7 +101,7 @@ public class PlayerStateWallRun : IPlayerState
         {
             displacement *= 1f / displacement.magnitude;
         }
-        player.controller.Move(displacement * Time.fixedDeltaTime);
+        player.controller.Move(displacement * BReplay.FixedDeltaTime());
     }
 
     public override void OnDetach()

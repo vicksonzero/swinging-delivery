@@ -93,7 +93,7 @@ public class Player : MonoBehaviour
             if (grapple.IsShooting())
             {
                 grapple.lineRenderer.SetPosition(0, transform.position - grapple.transform.position);
-                grapple.lineRenderer.SetPosition(1, grapple.startingPosition * (grapple.shootingInterval - (Time.fixedTime - grapple.startTime)) / grapple.shootingInterval);
+                grapple.lineRenderer.SetPosition(1, grapple.startingPosition * (grapple.shootingInterval - (BReplay.FixedTime() - grapple.startTime)) / grapple.shootingInterval);
             }
             else
             {
@@ -110,6 +110,8 @@ public class Player : MonoBehaviour
         {
             fuMouse.x = 0.001f * fuMouse.str_x;
             fuMouse.y = 0.001f * fuMouse.str_y;
+
+            Debug.Log("player # " + replay.frameID + " (" + (fuMouse.wasDown ? "Down" : "Up") + ") x=" + fuMouse.x + " y=" + fuMouse.y);
         }
         //Debug.Log(
         //    controller.collisions.above + " " +
@@ -163,7 +165,7 @@ public class Player : MonoBehaviour
 
         float augmentedGravity = state.GetGravity();
 
-        velocity.y += augmentedGravity * Time.fixedDeltaTime;
+        velocity.y += augmentedGravity * BReplay.FixedDeltaTime();
         velocity.y = Mathf.Max(velocity.y, -8);
 
         var displacement = velocity;
@@ -175,7 +177,7 @@ public class Player : MonoBehaviour
         {
             displacement *= 0.01f / displacement.magnitude;
         }
-        controller.Move(displacement * Time.fixedDeltaTime);
+        controller.Move(displacement * BReplay.FixedDeltaTime());
         if (grapple != null)
         {
             grapple.wasSwinging = false;
@@ -188,7 +190,7 @@ public class Player : MonoBehaviour
         {
             grapple.InitSwing(this, velocity);
         }
-        grapple.time += Time.fixedDeltaTime;
+        grapple.time += BReplay.FixedDeltaTime();
         var angle = grapple.totalAngle * Mathf.Pow(Mathf.Sin(grapple.time / grapple.totalTIme), 2);
         //Debug.Log("time:" + (grapple.time / grapple.totalTIme) + " angle:" + angle);
         //Debug.DrawLine(grapple.transform.position, grapple.transform.position + grapple.extremePosition, Color.red);
@@ -201,7 +203,7 @@ public class Player : MonoBehaviour
         swingPos.z = 0;
         var displacement = grapple.transform.position + swingPos - transform.position;
         displacement.z = 0;
-        velocity = displacement / Time.fixedDeltaTime;
+        velocity = displacement / BReplay.FixedDeltaTime();
 
         controller.Move(displacement);
         //velocity = velocity.normalized * originalSpeed;

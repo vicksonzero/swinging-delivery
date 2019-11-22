@@ -30,7 +30,7 @@ public class BAppleCounter : MonoBehaviour
     {
         if (startTime == -1)
         {
-            startTime = Time.fixedTime;
+            startTime = BReplay.FixedTime();
             titleScreen.SetActive(false);
         }
     }
@@ -39,7 +39,7 @@ public class BAppleCounter : MonoBehaviour
     {
         if (endTime == -1)
         {
-            endTime = Time.fixedTime;
+            endTime = BReplay.FixedTime();
         }
     }
 
@@ -61,7 +61,7 @@ public class BAppleCounter : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var time = startTime == -1 ? 0 : endTime == -1 ? Time.fixedTime - startTime : endTime - startTime;
+        var time = startTime == -1 ? 0 : endTime == -1 ? BReplay.FixedTime() - startTime : endTime - startTime;
         label.text = "Apples found: " + appleCount + " / " + appleTotal + "\nTime: " + time.ToString("0.00");
 
     }

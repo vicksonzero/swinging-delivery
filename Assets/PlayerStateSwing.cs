@@ -18,7 +18,7 @@ public class PlayerStateSwing : IPlayerState
     {
         var fuMouse = player.fuMouse;
         var grapple = player.grapple;
-        var projectedPos = player.transform.position + player.velocity * Time.fixedDeltaTime;
+        var projectedPos = player.transform.position + player.velocity * BReplay.FixedDeltaTime();
         var distToGrapple = (player.grapple == null) ? 0 : Vector3.Distance(projectedPos, player.grapple.transform.position);
 
         var collisions = player.controller.collisions;

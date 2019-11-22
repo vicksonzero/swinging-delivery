@@ -45,7 +45,8 @@ public class Grapple : MonoBehaviour
 
     public bool IsShooting()
     {
-        return Time.fixedTime - startTime < shootingInterval;
+        Debug.Log("IsShooting " + (BReplay.FixedTime() - startTime) + " " + BReplay.FixedDeltaTime() + " " + BReplay.FixedTime() + " " + startTime);
+        return BReplay.FixedTime() - startTime < shootingInterval;
     }
 
     public void InitSwing(Player player, Vector3 currentVelocity)

@@ -23,7 +23,7 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             var grapple = player.grapple;
             var playerToGrapple = grapple.transform.position - player.transform.position;
             Debug.Log("GetMouseButtonUp: " +
-                "Time= " + (Time.fixedTime - grapple.startTime) + " " +
+                "Time= " + (BReplay.FixedTime() - grapple.startTime) + " " +
                 "grapple= " + grapple.extremePosition.x + ",  " + grapple.extremePosition.y + " " +
                 "grapple= " + playerToGrapple.x + ",  " + playerToGrapple.y + " " +
                 "");
@@ -77,7 +77,7 @@ public class GrappleThrower : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     {
         var pos = new Vector3(x, y, -9);
         var grappleInst = Instantiate(grapplePrefab, pos, Quaternion.identity);
-        grappleInst.startTime = Time.fixedTime;
+        grappleInst.startTime = BReplay.FixedTime();
         grappleInst.shootingInterval = shootingInterval;
 
         return grappleInst;
