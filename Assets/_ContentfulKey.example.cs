@@ -5,4 +5,5 @@ using UnityEngine;
 public class _ContentfulKeyExample
 {
     public static string accessToken = "";
+    public static string cdnAccessToken = "";
 }

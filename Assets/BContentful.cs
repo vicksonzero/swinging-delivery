@@ -9,10 +9,14 @@ using UnityEngine.UI;
 public class BContentful : MonoBehaviour
 {
     public string baseUrl = "";
+    public string cdnBaseUrl = "";
     public string spaceId = "";
     public string envId = "";
 
     public InputField nameField;
+    public Button submitButton;
+    public Text submitButtonText;
+
     private static BContentful _inst;
     public static BContentful GetInstance()
     {
@@ -44,14 +48,16 @@ public class BContentful : MonoBehaviour
     }
     private static IEnumerator<UnityWebRequestAsyncOperation> CreateScoreEntry(BReplay.ReplayInputs replayInputs)
     {
+        var _inst = GetInstance();
+        _inst.submitButton.interactable = false;
         if (_ContentfulKey.accessToken == "")
         {
             Debug.Log("no _ContentfulKey.accessToken found");
+            _inst.submitButtonText.text = "Error: no Contentful accessToken";
             yield break;
         }
 
         Debug.Log("CreateScoreEntry1");
-        var _inst = GetInstance();
 
         string levelId = "5pYNHiPFQTDPo8dm1xQ2fY";
         ScoreData data = new ScoreData();
@@ -78,15 +84,47 @@ public class BContentful : MonoBehaviour
 
         yield return request.SendWebRequest();
 
+        string entryId;
+        int oldVersion;
         if (request.error != null)
         {
             Debug.Log("Error: " + request.error + " Content: " + request.downloadHandler.text);
+            _inst.submitButtonText.text = "Error: " + request.error;
+            yield break;
         }
         else
         {
-            Debug.Log("Status Code: " + request.responseCode + " Content: " + request.downloadHandler.text);
+
+            var responseObj = JsonConvert.DeserializeObject<CreateScoreEntryResult>(request.downloadHandler.text);
+            entryId = responseObj.sys.id;
+            oldVersion = responseObj.sys.version;
+
+            Debug.Log("Status Code: " + request.responseCode + "entryId:" + entryId + "oldVersion:" + oldVersion + " Content: " + request.downloadHandler.text);
         }
 
+        var url2 = string.Format("{0}/spaces/{1}/environments/{2}/entries/{3}/published", _inst.baseUrl, _inst.spaceId, _inst.envId, entryId);
+        UnityWebRequest request2 = new UnityWebRequest(url2, "PUT");
+        //UploadHandler uploadHandler2 = new UploadHandlerRaw(Encoding.UTF8.GetBytes("{\"fields\": " + JsonConvert.SerializeObject(data) + "}"));
+        //request2.uploadHandler = uploadHandler2;
+        request2.downloadHandler = new DownloadHandlerBuffer();
+
+        //request.SetRequestHeader("Content-Type", "application/json");
+        request2.SetRequestHeader("X-Contentful-Version", "" + (oldVersion));
+        request2.SetRequestHeader("Authorization", "Bearer " + _ContentfulKey.accessToken);
+
+        yield return request2.SendWebRequest();
+
+        if (request2.error != null)
+        {
+            Debug.Log("Error: " + request2.error + " Content: " + request2.downloadHandler.text);
+            _inst.submitButtonText.text = "Error2: " + request.error;
+        }
+        else
+        {
+            Debug.Log("request2 Status Code: " + request2.responseCode + " Content: " + request2.downloadHandler.text);
+
+            _inst.submitButtonText.text = "Published";
+        }
     }
     private static IEnumerator<UnityWebRequestAsyncOperation> CreateAllScoreEntry()
     {
@@ -220,4 +258,20 @@ public class BContentful : MonoBehaviour
         public string linkType;
         public string id;
     }
+
+    [Serializable]
+    struct CreateScoreEntryResult
+    {
+        public CreateScoreEntryResultSys sys;
+        public object fields;
+    }
+    [Serializable]
+    struct CreateScoreEntryResultSys
+    {
+        public string id;
+        public string type;
+        public int version;
+    }
+
+
 }
