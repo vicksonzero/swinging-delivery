@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class BContentful : MonoBehaviour
 {
@@ -40,7 +40,7 @@ public class BContentful : MonoBehaviour
         //StartCoroutine(CreateScoreEntry(replayJsonString));
         StartCoroutine(CreateScoreEntry(FindObjectOfType<BReplay>().GetReplayInputs()));
         //StartCoroutine(GetAllContentTypes());
-        //StartCoroutine(CreateAllScoreEntry(replayJsonString));
+        //StartCoroutine(CreateAllScoreEntry());
     }
     private static IEnumerator<UnityWebRequestAsyncOperation> CreateScoreEntry(BReplay.ReplayInputs replayInputs)
     {
@@ -53,12 +53,15 @@ public class BContentful : MonoBehaviour
         Debug.Log("CreateScoreEntry1");
         var _inst = GetInstance();
 
+        string levelId = "5pYNHiPFQTDPo8dm1xQ2fY";
         ScoreData data = new ScoreData();
-        data.playerName = new StringData(_inst.nameField.text);
-        data.gameVersion = new StringData("0.3.0");
-        data.clearTime = new IntData(replayInputs.clearTime);
+        data.playerName = new EnUSData<string>(_inst.nameField.text);
+        data.gameVersion = new EnUSData<string>("0.4.0");
+        data.bundleVersion = new EnUSData<int>(4);
+        data.clearTime = new EnUSData<int>(replayInputs.clearTime);
+        data.level = new EnUSData<SysData>(new SysData(levelId, "Link"));
         //data.replay = new ReplayData(replay);
-        data.replayInputs = new ReplayData(replayInputs);
+        data.replayInputs = new EnUSData<BReplay.ReplayInputs>(replayInputs);
 
         Debug.Log(JsonConvert.SerializeObject(data));
 
@@ -85,7 +88,7 @@ public class BContentful : MonoBehaviour
         }
 
     }
-    private static IEnumerator<UnityWebRequestAsyncOperation> CreateAllScoreEntry(string replayJsonString)
+    private static IEnumerator<UnityWebRequestAsyncOperation> CreateAllScoreEntry()
     {
 
         if (_ContentfulKey.accessToken == "")
@@ -176,60 +179,45 @@ public class BContentful : MonoBehaviour
     [Serializable]
     struct ScoreData
     {
-        public StringData playerName;
-        public StringData gameVersion;
-        public IntData clearTime;
-        public ReplayData replayInputs;
+        public EnUSData<string> playerName;
+        public EnUSData<SysData> level;
+        public EnUSData<string> gameVersion;
+        public EnUSData<int> bundleVersion;
+        public EnUSData<int> clearTime;
+        public EnUSData<BReplay.ReplayInputs> replayInputs;
         //public ReplayData replay;
     }
     [Serializable]
-    struct IntData
+    struct EnUSData<T>
     {
-        public IntData(int val)
+        public EnUSData(T val)
         {
             enUS = val;
         }
         [JsonProperty("en-US")]
-        public int enUS;
+        public T enUS;
     }
     [Serializable]
-    struct StringData
+    struct SysData
     {
-        public StringData(string val)
+        public SysData(string id, string linkType)
         {
-            enUS = val;
+            sys = new SysContentData(id, linkType);
         }
-        [JsonProperty("en-US")]
-        public string enUS;
+        public SysContentData sys;
     }
     [Serializable]
-    struct ReplayData
+    struct SysContentData
     {
-        public ReplayData(BReplay.ReplayInputs val)
+        public SysContentData(string id, string type)
         {
-            enUS = val;
+            this.type = type;
+            this.id = id;
+            linkType = "Entry";
+
         }
-        [JsonProperty("en-US")]
-        public BReplay.ReplayInputs enUS;
-    }
-    [Serializable]
-    struct FrameData
-    {
-        public FrameData(BReplay.Frame[] val)
-        {
-            enUS = val;
-        }
-        [JsonProperty("en-US")]
-        public BReplay.Frame[] enUS;
-    }
-    [Serializable]
-    struct PositionData
-    {
-        public PositionData(BReplay.Position[] val)
-        {
-            enUS = val;
-        }
-        [JsonProperty("en-US")]
-        public BReplay.Position[] enUS;
+        public string type;
+        public string linkType;
+        public string id;
     }
 }

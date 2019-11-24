@@ -79,11 +79,19 @@ public class BReplay : MonoBehaviour
                 }
                 break;
             case PlayMode.REPLAY:
-                if (frames.Count() > 0)
+                if (frames.Count() <= 0)
+                {
+                    fuMouse = new Player.FixedMouseButtons();
+                }
+                else
                 {
                     var tail = frames.First();
                     var posTail = positions.First();
-                    if (frameID == tail.frameID)
+                    if (frameID != tail.frameID)
+                    {
+                        fuMouse = new Player.FixedMouseButtons();
+                    }
+                    else
                     {
                         Debug.Log("Replay # " + tail.frameID + " (" + (tail.wasDown ? "Down" : "Up") + ") x=" + tail.x + " y=" + tail.y);
                         fuMouse.str_x = tail.x;
