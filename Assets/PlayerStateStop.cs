@@ -28,6 +28,7 @@ public class PlayerStateStop : IPlayerState
         }
         if (fuMouse.wasUp && player.grapple)
         {
+            GameObject.FindObjectOfType<BAppleCounter>().StartTImer();
             if (player.grapple.IsShooting())
             {
                 player.velocity = -grapple.startingPosition * player.dashSpeed;

@@ -12,18 +12,20 @@ public class BReplay : MonoBehaviour
 
     private List<Frame> frames;
     private List<Position> positions;
-    private Replay replay;
+    private ReplayInputs replay;
+
+    public bool isEnded = false;
     // Start is called before the first frame update
     void Start()
     {
         frames = new List<Frame>();
         positions = new List<Position>();
-        replay = new Replay();
-        if (PlayerPrefs.HasKey("save_replay"))
-        {
-            StartPlaying(PlayerPrefs.GetString("save_replay"), GetComponent<Player>());
-            PlayerPrefs.DeleteKey("save_replay");
-        }
+        replay = new ReplayInputs();
+        //if (PlayerPrefs.HasKey("save_replay"))
+        //{
+        //    StartPlaying(PlayerPrefs.GetString("save_replay"), GetComponent<Player>());
+        //    PlayerPrefs.DeleteKey("save_replay");
+        //}
     }
 
     // Update is called once per frame
@@ -35,7 +37,7 @@ public class BReplay : MonoBehaviour
     public void StartRecording(Player player)
     {
         Debug.Log("StartRecording");
-        replay = new Replay();
+        replay = new ReplayInputs();
         replay.startX = (int)(player.transform.position.x * 1000);
         replay.startY = (int)(player.transform.position.y * 1000);
 
@@ -45,16 +47,57 @@ public class BReplay : MonoBehaviour
         playMode = PlayMode.RECORD;
     }
 
+    public void EndRecording()
+    {
+        if (playMode == PlayMode.RECORD)
+        {
+            Player player = GetComponent<Player>();
+            Debug.Log("EndRecording");
+            replay.endX = (int)(player.transform.position.x * 1000);
+            replay.endY = (int)(player.transform.position.y * 1000);
+
+            player.transform.position = new Vector3(0.001f * replay.endX, 0.001f * replay.endY, 0);
+
+            var frame = new Frame(frameID, false, player.fuMouse);
+            frame.isEnd = true;
+            frames.Add(frame);
+
+            replay.clearTime = frameID;
+
+        }
+        isEnded = true;
+    }
+
+
+
     public void StartPlaying(string save, Player player)
     {
         replay = FromJson(save);
         frames = replay.frames.ToList();
-        positions = replay.positions.ToList();
+        //positions = replay.positions.ToList();
         Debug.Log("StartPlaying(" + frames.Count + ")");
         frameID = 0;
 
         player.transform.position = new Vector3(0.001f * replay.startX, 0.001f * replay.startY, 0);
         playMode = PlayMode.REPLAY;
+    }
+
+    public void StartPlaying(BContentful.ScoreData save, Player player)
+    {
+        replay = save.replayInputs;
+        frames = replay.frames.ToList();
+        //positions = replay.positions.ToList();
+        positions = new List<Position>();
+        Debug.Log("StartPlaying(" + frames.Count + ")");
+        frameID = 0;
+
+        player.transform.position = new Vector3(0.001f * replay.startX, 0.001f * replay.startY, 0);
+        playMode = PlayMode.REPLAY;
+    }
+
+    internal float GetClearTimeSeconds()
+    {
+        return 0.02f * replay.clearTime;
     }
 
     internal void HandleInput(ref Player.FixedMouseButtons fuMouse)
@@ -82,11 +125,12 @@ public class BReplay : MonoBehaviour
                 if (frames.Count() <= 0)
                 {
                     fuMouse = new Player.FixedMouseButtons();
+                    fuMouse.isEnded = true;
+                    isEnded = true;
                 }
                 else
                 {
                     var tail = frames.First();
-                    var posTail = positions.First();
                     if (frameID != tail.frameID)
                     {
                         fuMouse = new Player.FixedMouseButtons();
@@ -104,28 +148,34 @@ public class BReplay : MonoBehaviour
                         var velocity = player.velocity;
                         var _pos = new Position(frameID, (int)(pos.x * 1000), (int)(pos.y * 1000), velocity.x.ToString(), velocity.y.ToString());
 
-                        Debug.Log("Replay # " + posTail.frameID + " " +
-                            "Position: x=" + _pos.x + " y=" + _pos.y + " vx=" + _pos.vx + " vy=" + _pos.vy + " | " +
-                            "REC Position: x=" + posTail.x + " y=" + posTail.y + " vx=" + posTail.vx + " vy=" + posTail.vy +
-                            "");
-
-                        bool outSync = (
-                            _pos.x != posTail.x ||
-                            _pos.y != posTail.y ||
-                            !String.Equals(_pos.vx, posTail.vx) ||
-                            !String.Equals(_pos.vy, posTail.vy)
-                        );
-
-                        if (outSync)
+                        if (positions.Count() > 0)
                         {
-                            Debug.Log("Out sync!");
+                            var posTail = positions.First();
+                            Debug.Log("Replay # " + posTail.frameID + " " +
+                                "Position: x=" + _pos.x + " y=" + _pos.y + " vx=" + _pos.vx + " vy=" + _pos.vy + " | " +
+                                "REC Position: x=" + posTail.x + " y=" + posTail.y + " vx=" + posTail.vx + " vy=" + posTail.vy +
+                                "");
+
+                            bool outSync = (
+                                _pos.x != posTail.x ||
+                                _pos.y != posTail.y ||
+                                !String.Equals(_pos.vx, posTail.vx) ||
+                                !String.Equals(_pos.vy, posTail.vy)
+                            );
+
+                            if (outSync)
+                            {
+                                Debug.Log("Out sync!");
+                            }
+                            positions.RemoveAt(0);
                         }
 
                         frames.RemoveAt(0);
-                        positions.RemoveAt(0);
                         if (frames.Count() <= 0)
                         {
                             Debug.Log("Replay Ended.");
+                            fuMouse.isEnded = true;
+                            isEnded = true;
                         }
                     }
                 }
@@ -134,10 +184,10 @@ public class BReplay : MonoBehaviour
         frameID++;
     }
 
-    public Replay GetReplay()
+    public ReplayInputs GetReplay()
     {
         replay.frames = frames.ToArray();
-        replay.positions = positions.ToArray();
+        //replay.positions = positions.ToArray();
         replay.clearTime = frameID;
         return replay;
     }
@@ -165,9 +215,9 @@ public class BReplay : MonoBehaviour
         return JsonUtility.ToJson(_replay);
     }
 
-    public Replay FromJson(string save)
+    public ReplayInputs FromJson(string save)
     {
-        return JsonUtility.FromJson<Replay>(save);
+        return JsonUtility.FromJson<ReplayInputs>(save);
     }
 
     private static BReplay _inst;
@@ -187,7 +237,7 @@ public class BReplay : MonoBehaviour
 
 
     [Serializable]
-    public struct Replay
+    public struct FullReplay
     {
         public int startX;
         public int startY;
@@ -200,6 +250,8 @@ public class BReplay : MonoBehaviour
     {
         public int startX;
         public int startY;
+        public int endX;
+        public int endY;
         public int clearTime;
         public Frame[] frames;
     }

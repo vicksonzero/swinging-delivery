@@ -64,28 +64,6 @@ public class Player : MonoBehaviour
         //    Jump();
         //    controller.collisions.below = false;
         //}
-        if (Input.GetMouseButtonUp(0))
-        {
-            var pos = Input.mousePosition;
-            pos.z = 10.0f;
-            pos = Camera.main.ScreenToWorldPoint(pos);
-            pos.z = 0;
-
-            fuMouse.wasUp = true;
-            fuMouse.str_x = (int)(pos.x * 1000);
-            fuMouse.str_y = (int)(pos.y * 1000);
-        }
-        if (Input.GetMouseButtonDown(0))
-        {
-            var pos = Input.mousePosition;
-            pos.z = 10.0f;
-            pos = Camera.main.ScreenToWorldPoint(pos);
-            pos.z = 0;
-
-            fuMouse.wasDown = true;
-            fuMouse.str_x = (int)(pos.x * 1000);
-            fuMouse.str_y = (int)(pos.y * 1000);
-        }
 
         // grapple graphics
         if (grapple)
@@ -101,6 +79,30 @@ public class Player : MonoBehaviour
                 grapple.lineRenderer.SetPosition(1, Vector3.zero);
             }
         }
+    }
+
+    public void OnVirtualMouseUp()
+    {
+        var pos = Input.mousePosition;
+        pos.z = 10.0f;
+        pos = Camera.main.ScreenToWorldPoint(pos);
+        pos.z = 0;
+
+        fuMouse.wasUp = true;
+        fuMouse.str_x = (int)(pos.x * 1000);
+        fuMouse.str_y = (int)(pos.y * 1000);
+    }
+
+    public void OnVirtualMouseDown()
+    {
+        var pos = Input.mousePosition;
+        pos.z = 10.0f;
+        pos = Camera.main.ScreenToWorldPoint(pos);
+        pos.z = 0;
+
+        fuMouse.wasDown = true;
+        fuMouse.str_x = (int)(pos.x * 1000);
+        fuMouse.str_y = (int)(pos.y * 1000);
     }
 
     void FixedUpdate()
@@ -123,19 +125,22 @@ public class Player : MonoBehaviour
 
         //Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-        if (controller.collisions.below)
+        if (!replay.isEnded)
         {
-            velocity.y = 0;
+            if (controller.collisions.below)
+            {
+                velocity.y = 0;
+            }
+            nextState = state.HandleInput();
+            fuMouse = new FixedMouseButtons();
+            if (nextState != null)
+            {
+                ChangeState(nextState);
+                nextState = null;
+            }
+            state.HandleMovement();
+            stateLabel.text = stateName + " " + velocity.magnitude.ToString("00.00");
         }
-        nextState = state.HandleInput();
-        fuMouse = new FixedMouseButtons();
-        if (nextState != null)
-        {
-            ChangeState(nextState);
-            nextState = null;
-        }
-        state.HandleMovement();
-        stateLabel.text = stateName + " " + velocity.magnitude.ToString("00.00");
     }
 
     private void ChangeState(IPlayerState newState)
@@ -258,5 +263,6 @@ public class Player : MonoBehaviour
         public float y;
         public bool wasDown;
         public bool wasUp;
+        public bool isEnded;
     }
 }

@@ -8,13 +8,16 @@ using UnityEngine.UI;
 
 public class BContentful : MonoBehaviour
 {
-    public string baseUrl = "";
-    public string cdnBaseUrl = "";
-    public string spaceId = "";
-    public string envId = "";
+    public string baseUrl;
+    public string cdnBaseUrl;
+    public string spaceId;
+    public string envId;
+    public string versionString;
+    public int bundleVersion;
 
     public InputField nameField;
     public Button submitButton;
+    public Button resultOkButton;
     public Text submitButtonText;
 
     private static BContentful _inst;
@@ -41,15 +44,17 @@ public class BContentful : MonoBehaviour
     {
         Debug.Log("CreateScoreEntry0");
         var replayJsonString = FindObjectOfType<BReplay>().ToJson();
-        //StartCoroutine(CreateScoreEntry(replayJsonString));
         StartCoroutine(CreateScoreEntry(FindObjectOfType<BReplay>().GetReplayInputs()));
         //StartCoroutine(GetAllContentTypes());
         //StartCoroutine(CreateAllScoreEntry());
+        //StartCoroutine(CdnGetAllScores());
+
     }
     private static IEnumerator<UnityWebRequestAsyncOperation> CreateScoreEntry(BReplay.ReplayInputs replayInputs)
     {
         var _inst = GetInstance();
         _inst.submitButton.interactable = false;
+        _inst.resultOkButton.interactable = false;
         if (_ContentfulKey.accessToken == "")
         {
             Debug.Log("no _ContentfulKey.accessToken found");
@@ -60,12 +65,12 @@ public class BContentful : MonoBehaviour
         Debug.Log("CreateScoreEntry1");
 
         string levelId = "5pYNHiPFQTDPo8dm1xQ2fY";
-        ScoreData data = new ScoreData();
+        ScoreDataEnUS data = new ScoreDataEnUS();
         data.playerName = new EnUSData<string>(_inst.nameField.text);
-        data.gameVersion = new EnUSData<string>("0.4.0");
-        data.bundleVersion = new EnUSData<int>(4);
+        data.gameVersion = new EnUSData<string>(_inst.versionString);
+        data.bundleVersion = new EnUSData<int>(_inst.bundleVersion);
         data.clearTime = new EnUSData<int>(replayInputs.clearTime);
-        data.level = new EnUSData<SysData>(new SysData(levelId, "Link"));
+        data.level = new EnUSData<LinkTypeField>(new LinkTypeField(levelId, "Link"));
         //data.replay = new ReplayData(replay);
         data.replayInputs = new EnUSData<BReplay.ReplayInputs>(replayInputs);
 
@@ -124,6 +129,7 @@ public class BContentful : MonoBehaviour
             Debug.Log("request2 Status Code: " + request2.responseCode + " Content: " + request2.downloadHandler.text);
 
             _inst.submitButtonText.text = "Published";
+            _inst.resultOkButton.interactable = true;
         }
     }
     private static IEnumerator<UnityWebRequestAsyncOperation> CreateAllScoreEntry()
@@ -135,10 +141,8 @@ public class BContentful : MonoBehaviour
             yield break;
         }
         Debug.Log("CreateAllScoreEntry");
-        if (!_inst)
-        {
-            _inst = FindObjectOfType<BContentful>();
-        }
+
+        var _inst = GetInstance();
 
         //PostData data = new PostData();
         //data.Add("playerName", "Chan Tai Man");
@@ -162,7 +166,7 @@ public class BContentful : MonoBehaviour
 
         if (request.error != null)
         {
-            Debug.Log("Error: " + request.error);
+            Debug.Log("Error: " + request.error + " Content: " + request.downloadHandler.text);
         }
         else
         {
@@ -177,11 +181,9 @@ public class BContentful : MonoBehaviour
             Debug.Log("no _ContentfulKey.accessToken found");
             yield break;
         }
-        Debug.Log("CreateAllScoreEntry");
-        if (!_inst)
-        {
-            _inst = FindObjectOfType<BContentful>();
-        }
+        Debug.Log("GetAllContentTypes");
+
+        var _inst = GetInstance();
 
         //PostData data = new PostData();
         //data.Add("playerName", "Chan Tai Man");
@@ -204,7 +206,7 @@ public class BContentful : MonoBehaviour
 
         if (request.error != null)
         {
-            Debug.Log("Error: " + request.error);
+            Debug.Log("Error: " + request.error + " Content: " + request.downloadHandler.text);
         }
         else
         {
@@ -214,11 +216,68 @@ public class BContentful : MonoBehaviour
     }
 
 
+    public static IEnumerator<UnityWebRequestAsyncOperation> CdnGetAllScores()
+    {
+        if (_ContentfulKey.accessToken == "")
+        {
+            Debug.Log("no _ContentfulKey.accessToken found");
+            yield break;
+        }
+        Debug.Log("CdnGetAllScores");
+
+        var _inst = GetInstance();
+
+        //PostData data = new PostData();
+        //data.Add("playerName", "Chan Tai Man");
+        //data.Add("replay", replayJsonString);
+        //data.Add("gameVersion", "0.3.0"); // TODO: remove before launch
+
+        //Debug.Log(data.toJsonString());
+
+        var url = String.Format("{0}//spaces/{1}/environments/{2}/entries?access_token={3}&content_type=score&fields.bundleVersion={4}&order=fields.clearTime", _inst.cdnBaseUrl, _inst.spaceId, _inst.envId, _ContentfulKey.cdnAccessToken, _inst.bundleVersion);
+
+        Debug.Log("CdnGetAllScores:" + url);
+        UnityWebRequest request = new UnityWebRequest(url, "GET");
+        //UploadHandler uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(data.toJsonString()));
+        //request.uploadHandler = uploadHandler;
+        request.downloadHandler = new DownloadHandlerBuffer();
+
+        request.SetRequestHeader("User-Agent", "Unity; Swing-Delivery/" + _inst.versionString);
+        request.SetRequestHeader("Content-Type", "application/vnd.contentful.management.v1+json");
+        //request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.error != null)
+        {
+            Debug.Log("Error: " + request.error + " Content: " + request.downloadHandler.text);
+        }
+        else
+        {
+            Debug.Log("Status Code: " + request.responseCode + " Content: " + request.downloadHandler.text);
+
+            var response = JsonConvert.DeserializeObject<GetScoreEntriesResult>(request.downloadHandler.text);
+            FindObjectOfType<BChooseReplayPanel>().PopulateReplayList(response);
+        }
+    }
+
+
     [Serializable]
-    struct ScoreData
+    public struct ScoreData
+    {
+        public string playerName;
+        public LinkTypeField level;
+        public string gameVersion;
+        public int bundleVersion;
+        public int clearTime;
+        public BReplay.ReplayInputs replayInputs;
+        //public ReplayData replay;
+    }
+    [Serializable]
+    struct ScoreDataEnUS
     {
         public EnUSData<string> playerName;
-        public EnUSData<SysData> level;
+        public EnUSData<LinkTypeField> level;
         public EnUSData<string> gameVersion;
         public EnUSData<int> bundleVersion;
         public EnUSData<int> clearTime;
@@ -236,18 +295,18 @@ public class BContentful : MonoBehaviour
         public T enUS;
     }
     [Serializable]
-    struct SysData
+    public struct LinkTypeField
     {
-        public SysData(string id, string linkType)
+        public LinkTypeField(string id, string linkType)
         {
-            sys = new SysContentData(id, linkType);
+            sys = new SysData(id, linkType);
         }
-        public SysContentData sys;
+        public SysData sys;
     }
     [Serializable]
-    struct SysContentData
+    public struct SysData
     {
-        public SysContentData(string id, string type)
+        public SysData(string id, string type)
         {
             this.type = type;
             this.id = id;
@@ -274,4 +333,47 @@ public class BContentful : MonoBehaviour
     }
 
 
+    [Serializable]
+    public struct GetScoreEntriesResult
+    {
+        public object sys;
+        public int total;
+        public int skip;
+        public int limit;
+        public EntryData<ScoreData>[] items;
+        public IncludesField includes;
+    }
+
+    [Serializable]
+    public struct IncludesField
+    {
+        public EntryData<LevelData>[] Entry;
+    }
+
+    [Serializable]
+    public struct EntryData<T>
+    {
+        public IncludesEntryDataSys sys;
+        public T fields;
+    }
+
+    [Serializable]
+    public struct LevelData
+    {
+        public int levelId;
+        public string name;
+    }
+
+    [Serializable]
+    public struct IncludesEntryDataSys
+    {
+        public string id;
+        public string type;
+    }
+
+    [Serializable]
+    struct ContentTypeField
+    {
+        public SysData sys;
+    }
 }
